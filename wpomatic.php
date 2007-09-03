@@ -103,7 +103,7 @@ class WPOMatic {
    
     # WP-o-Matic URIs. Without trailing slash                                                           
     $this->adminurl = get_option('siteurl') . '/wp-admin/options-general.php?page=wpomatic.php';
-    $this->pluginpath = get_option('siteurl') . '/wp-content/plugins/wpomatic';           
+    $this->pluginpath = get_option('siteurl') . '/wp-content/plugins/wp-o-matic';           
     $this->helpurl = $this->pluginpath . '/help.php?item=';
     $this->tplpath = $this->pluginpath . '/inc/admin';
     $this->cachepath = WPODIR . get_option('wpo_cachepath');
