@@ -5,7 +5,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-rss-the-wordpress-rss-agreggator/
- * Version: 1.0RC1-5                     
+ * Version: 1.0RC1-6                     
  * =======================================================================
  
  Todo:
@@ -62,7 +62,7 @@ require_once( WPOINC . 'tools.class.php' );
                                           
 class WPOMatic {               
             
-  var $version = '1.0RC1-5';              
+  var $version = '1.0RC1-6';              
                            
   # Editable options
   var $delete_tables = true;  # only if you know what you're doing
