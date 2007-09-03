@@ -4,7 +4,7 @@
  * Plugin Name: WP-o-Matic
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
- * Plugin URI: http://devthought.com/2007/wp-rss-the-wordpress-rss-agreggator/
+ * Plugin URI: http://devthought.com/wp-rss-the-wordpress-rss-agreggator/
  * Version: 1.0RC1-5                     
  * =======================================================================
  
