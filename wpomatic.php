@@ -62,7 +62,7 @@ require_once( WPOINC . 'tools.class.php' );
                                           
 class WPOMatic {               
             
-  var $version = '1.0RC1-4';              
+  var $version = '1.0RC1-5';              
                            
   # Editable options
   var $delete_tables = true;  # only if you know what you're doing
@@ -576,7 +576,7 @@ class WPOMatic {
     $cachepath = $this->cachepath;
     
     if(is_writeable($cachepath) && $contents)
-    {
+    { 
       file_put_contents($cachepath . '/' . $filename, $contents);
       return $this->pluginpath . '/' . get_option('wpo_cachepath') . '/' . $filename;
     }
