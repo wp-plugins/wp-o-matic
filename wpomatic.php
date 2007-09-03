@@ -90,8 +90,8 @@ class WPOMatic {
     );                                    
     
     # Actions
-    add_action('activate_wpomatic/wpomatic.php', array(&$this, 'install'));                   # Plugin installed
-    add_action('deactivate_wpomatic/wpomatic.php', array(&$this, 'uninstall'));               # Plugin unintalled
+    add_action('activate_wp-o-matic/wpomatic.php', array(&$this, 'install'));                   # Plugin installed
+    add_action('deactivate_wp-o-matic/wpomatic.php', array(&$this, 'uninstall'));               # Plugin unintalled
     add_action('init', array(&$this, 'init'));                                                # Wordpress init      
     add_action('admin_footer', array(&$this, 'adminWarning'));                                # Admin footer
     add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation         
