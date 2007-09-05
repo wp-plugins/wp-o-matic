@@ -24,7 +24,7 @@ Supported features:
 * Words Rewriting. Want to replace the word “Poker” with “Texas Holdem”? We have it covered. Want to use regular expressions? We have it covered.
 * Words Relinking. Define custom links for words you specify.
 * Post templating. Define a global header and footer for the posts, or even for a specific feed. Add ads
-* Campaigns import/export using OPML files. Easily import hundreds of feeds into new or existing campaigns! Share your feeds and campaigns with fellow blog spammers!
+* Campaigns import/export using OPML files. Easily import hundreds of feeds into new or existing campaigns! 
 
 == Installation ==
 
