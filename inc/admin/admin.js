@@ -154,8 +154,6 @@ Event.observe( window, 'load', function(){
 	  var current = $('setup_steps').getElementsBySelector('.current').first();
 	  var current_index = parseInt(current.id.replace('step_', ''));
 	  
-	  console.log(stepsnum);
-	  
 	  var enable_button = function(input) {
 	    var input = $(input);
 	    input.disabled = false;
@@ -180,7 +178,6 @@ Event.observe( window, 'load', function(){
 	  var show_page = function(index)
 	  {
 	    Element.removeClassName('step_' + current_index, 'current');
-	    console.log(index);
 	    current_index = index;	    
 	    Element.addClassName('step_' + current_index, 'current');
       update_buttons_status();  
