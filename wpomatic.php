@@ -999,7 +999,7 @@ class WPOMatic {
     $nophp = !file_exists($php);        
     $safe_mode = ini_get('safe_mode');
         
-    $command = $this->$this->cron_command;
+    $command = $this->cron_command;
     $url = $this->cron_url;
         
     include(WPOTPL . 'setup.php');
