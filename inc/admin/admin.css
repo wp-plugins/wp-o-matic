@@ -2,7 +2,7 @@ html {
 	overflow-y: scroll;
 }     
 
-#options, #edit_tabs, #edit_buttons, #edit_words, ul.import_links {
+#options, #edit_tabs, #edit_buttons, #edit_words, ul.import_links, div#setup_buttons {
 	margin: 0;
 	padding: 0; 
 	overflow: hidden;
@@ -92,12 +92,6 @@ p.none {
 p#log_status {
 	margin-top: 10px
 }            
-
-#versioncheck h3 {     
-	padding-top: 10px;
-	color: #14568A;   
-	border-top: 1px dotted #ccc;   	
-}                                                       
 
 .import_submit {
   border-top: 1px dotted #ccc;
@@ -510,13 +504,10 @@ div.error ul li {
 }
 
 #command_input {
-  width: 340px;
+  width: 600px;
   margin-right: 8px;
 }
 
-#command_select {
-  float: right;
-}
 
 #logs {
   padding-left: 25px;
@@ -568,3 +559,28 @@ div.error ul li {
   border-bottom: 1px dotted #999;
   padding: 10px 0 8px;
 }
+
+#setup_steps {
+  padding-top: 10px;
+  padding-left: 10px;
+  border: 1px dotted #999;
+  border-width: 1px 0;
+}
+
+#setup_steps li {
+  margin-bottom: 30px;
+  list-style-type: none;
+  display: none;
+}
+
+#setup_steps li.current {
+  display: list-item !important;
+  display: block;
+}
+
+#setup_button_submit { float: right; }
+#setup_buttons input.disabled { background: #eee; color: #999; }
+
+.command { border: 1px solid #ccc; background: 1px solid #fafafa; padding: 10px; color: #666; }
+#options_cron .command { margin: 10px 0; }
+#options_cron h3 { font-size: 11px; color: #333; margin: 10px 0; }

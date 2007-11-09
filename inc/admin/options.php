@@ -16,6 +16,19 @@
       <input type="hidden" name="update" value="1" />
       
       <ul id="options">
+        <li id="options_cron">
+          <?php echo label_for('option_unixcron', __('Unix cron', 'wpomatic')) ?>
+          <?php echo checkbox_tag('option_unixcron', 1, get_option('wpo_unixcron')) ?>
+        
+          <h3>Cron command:</h3>
+          <div id="cron_command" class="command"><?php echo $this->cron_command ?></div>
+          
+          <h3>WebCron-ready URL:</h3>
+          <div id="cron_command" class="command"><?php echo $this->cron_url ?></div>
+        
+          <p class="note"><?php _e('Cron is set up to handle fetching.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>cron" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
+        </li>
+
         <li>
           <?php echo label_for('option_logging', __('Enable logging', 'wpomatic')) ?>
           <?php echo checkbox_tag('option_logging', 1, get_option('wpo_log')) ?>

@@ -5,7 +5,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0RC1-9                     
+ * Version: 1.0                     
  * =======================================================================
  
  Todo:
@@ -50,6 +50,10 @@
    Added i18n support with translation domain 'wpomatic'             
    Added help throughout the system.
                     
+ - 1.0
+   Added compatibility with Wordpress 2.3
+   Added setup screen
+   
 */    
                          
 # WP-o-Matic paths. With trailing slash.
@@ -59,17 +63,17 @@ define('WPOTPL', WPOINC . 'admin/');
     
 # Dependencies                            
 require_once( WPOINC . 'tools.class.php' );               
-                                          
+            
 class WPOMatic {               
             
-  var $version = '1.0RC1-9';              
+  var $version = '1.0';              
                            
   # Editable options
-  var $delete_tables = true;  # only if you know what you're doing
+  var $delete_tables = false;  # only if you know what you're doing
                          
-  # Internal          
-  var $sections = array('home', 'list', 'add', 'edit', 'options', 'import', 'export', 'reset', 'delete', 
-                        'logs', 'testfeed', 'forcefetch');  
+  # Internal            
+  var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'import', 'export',
+                        'reset', 'delete', 'logs', 'testfeed', 'forcefetch');  
                         
   var $campaign_structure = array('main' => array(), 'rewrites' => array(), 
                                   'categories' => array(), 'feeds' => array());
@@ -89,24 +93,32 @@ class WPOMatic {
       'log'                 => $wpdb->prefix . 'wpo_log'
     );                                    
     
+    # Is installed ?
+    $this->installed = get_option('wpo_version') == $this->version;
+    $this->setup = get_option('wpo_setup');
+    
     # Actions
-    add_action('activate_wp-o-matic/wpomatic.php', array(&$this, 'install'));                   # Plugin installed
-    add_action('deactivate_wp-o-matic/wpomatic.php', array(&$this, 'uninstall'));               # Plugin unintalled
+    add_action('activate_wp-o-matic/wpomatic.php', array(&$this, 'install'));                 # Plugin installed
+    add_action('deactivate_wp-o-matic/wpomatic.php', array(&$this, 'uninstall'));             # Plugin unintalled
     add_action('init', array(&$this, 'init'));                                                # Wordpress init      
     add_action('admin_footer', array(&$this, 'adminWarning'));                                # Admin footer
-    add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation         
+    add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation            
    
     # Ajax actions
     add_action('wp_ajax_delete-campaign', array(&$this, 'adminDelete'));
     add_action('wp_ajax_test-feed', array(&$this, 'adminTestfeed'));
-    add_action('wp_ajax_versioncheck', array(&$this, 'adminVersioncheck'));
    
-    # WP-o-Matic URIs. Without trailing slash                                                           
-    $this->adminurl = get_option('siteurl') . '/wp-admin/options-general.php?page=wpomatic.php';
+    # WP-o-Matic URIs. Without trailing slash               
+    $this->optionsurl = get_option('siteurl') . '/wp-admin/options-general.php';                                           
+    $this->adminurl = $this->optionsurl . '?page=wpomatic.php';
     $this->pluginpath = get_option('siteurl') . '/wp-content/plugins/wp-o-matic';           
     $this->helpurl = $this->pluginpath . '/help.php?item=';
     $this->tplpath = $this->pluginpath . '/inc/admin';
     $this->cachepath = WPODIR . get_option('wpo_cachepath');
+    
+    # Cron command / url
+    $this->cron_command = attribute_escape('*/20 * * * * '. $php . ' ' . dirname(__FILE__)  . '/cron.php?code=' . get_option('wpo_croncode'));        
+    $this->cron_url = $this->pluginpath . '/cron.php?code=' . get_option('wpo_croncode');
   }
   
   /**
@@ -118,12 +130,13 @@ class WPOMatic {
   {
     global $wpdb;
     
-    require_once( ABSPATH . '/wp-admin/admin-db.php' );
-                           
-    if(get_option('wpomatic') != $this->version) 
-    {
+    if(file_exists(ABSPATH . '/wp-admin/upgrade-functions.php'))
       require_once(ABSPATH . '/wp-admin/upgrade-functions.php');
-			
+    else
+      require_once(ABSPATH . '/wp-admin/includes/upgrade.php');
+                           
+    if(! $this->installed) 
+    {			
 			# wpo_campaign
 			dbDelta( "CREATE TABLE `{$this->db['campaign']}` (
 							    `id` int(11) unsigned NOT NULL auto_increment,
@@ -196,6 +209,9 @@ class WPOMatic {
   							  `created_on` timestamp,
   							  PRIMARY KEY  (`id`)
   						 );" ); 			      
+  						 
+  	  add_option('wpo_version', $this->version);
+  	  $this->installed = true;
     }                       
     
     # Options   
@@ -222,17 +238,10 @@ class WPOMatic {
     {
       foreach($this->db as $table) 
         $wpdb->query("DROP TABLE `{$table}` ");
-    }                                          
-    
-    // Delete session data / cookies
-    @session_start();
-    if(isset($_SESSION['wpo_test_run']))
-      unset($_SESSION['wpo_test_run']);
-    
-    setcookie('wpo_version', $a, -3600);
+    }                                
     
     // Delete options
-    WPOTools::deleteOptions(array('wpo_log', 'wpo_unixcron', 'wpo_croncode', 'wpo_cacheimages', 'wpo_cachepath'));
+    WPOTools::deleteOptions(array('wpo_version', 'wpo_setup', 'wpo_log', 'wpo_unixcron', 'wpo_croncode', 'wpo_cacheimages', 'wpo_cachepath'));
   }                                                                                              
    
   /**
@@ -244,16 +253,19 @@ class WPOMatic {
   {
     global $wpdb;
     
-    if(! get_option('wpo_unixcron'))
-      $this->processAll();   
-      
-    if(isset($_REQUEST['page']))
+    if($this->installed)
     {
-      if(isset($_REQUEST['campaign_add']) || isset($_REQUEST['campaign_edit']))
-        $this->adminCampaignRequest();
-      
-      $this->adminExportProcess();
-      $this->adminInit();  
+      if(! get_option('wpo_unixcron'))
+        $this->processAll();   
+
+      if(isset($_REQUEST['page']))
+      {
+        if(isset($_REQUEST['campaign_add']) || isset($_REQUEST['campaign_edit']))
+          $this->adminCampaignRequest();
+
+        $this->adminExportProcess();
+        $this->adminInit();  
+      }  
     }
   } 
     
@@ -455,17 +467,17 @@ class WPOMatic {
    */
   function insertPost($title, $content, $timestamp = null, $category = null, $status = 'draft', $authorid = null, $allowpings = true, $allowcomments = true, $meta = array())
   {
-    $date = ($timestamp) ? date('Y-m-d H:i:s', $timestamp) : null;
+    $date = ($timestamp) ? gmdate('Y-m-d H:i:s', $timestamp) : null;
     $postid = wp_insert_post(array(
-								'post_title' 	    => $title,
-								'post_content'  	=> $content,
-								'post_category'   => $category,
-								'post_status' 	  => $status,
-								'post_author'     => $authorid,
-								'post_date'       => $date,
-								'comment_status'  => $allowcomments,
-								'ping_status'     => $allowpings,
-								'no_filter'       => true
+		  'post_title' 	            => $title,
+  		'post_content'  	        => $content,
+  		'post_content_filtered'  	=> $content,
+  		'post_category'           => $category,
+  		'post_status' 	          => $status,
+  		'post_author'             => $authorid,
+  		'post_date'               => $date,
+  		'comment_status'          => $allowcomments,
+  		'ping_status'             => $allowpings
     ));
     	
 		foreach($meta as $key => $value) 
@@ -620,7 +632,7 @@ class WPOMatic {
   function getBlogCategories()
   {
     global $wpdb;
-    $categories = $wpdb->get_results("SELECT * FROM `$wpdb->categories` ORDER BY cat_ID ASC ");
+    $categories = get_categories('hide_empty=0');
     
     return $categories;
   }
@@ -867,9 +879,9 @@ class WPOMatic {
   function adminInit() 
   {                 
     auth_redirect();
-                                                      
-    $this->section = isset($_REQUEST['s']) ? $_REQUEST['s'] : $this->sections[0];
-                                               
+    
+    $this->section = ($this->setup) ? ($_REQUEST['s'] ? $_REQUEST['s'] : $this->sections[0]) : 'setup';
+    
     wp_enqueue_script('prototype');
     wp_enqueue_script('wpoadmin', $this->tplpath . '/admin.js', array('prototype'), $this->version);
     
@@ -890,13 +902,9 @@ class WPOMatic {
    */
   function adminWarning()
   {
-    @session_start();
-    
-    if(isset($_SESSION['wpo_test_run']))
+    if(! $this->setup && $this->section != 'setup')
     {
-      add_option('wpo_test_run', 1, 'Simplepie hosting test run.');
-    } elseif(! get_option('wpo_test_run')) {
-      echo "<div id='wpo-warning' class='updated fade-ff0000'><p>".sprintf(__('Please <a href="%s">click here</a> to make sure SimplePie, the feeds parsing library which empowers WP-o-Matic, works on your server.', 'wpomatic'), $this->pluginpath . '/inc/simplepie/simplepie.tests.php')."</p></div>
+      echo "<div id='wpo-warning' class='updated fade-ff0000'><p>".sprintf(__('Please <a href="%s">click here</a> to setup and configure WP-o-Matic.', 'wpomatic'), $this->adminurl . '&amp;s=setup')."</p></div>
 
   		  <style type='text/css'>
   		    #adminmenu { margin-bottom: 5em; }
@@ -967,10 +975,35 @@ class WPOMatic {
     $nextcampaigns = $this->getCampaigns('fields=id,title,lastactive,frequency&limit=5&orderby=UNIX_TIMESTAMP(lastactive)%2Bfrequency&ordertype=ASC');
     $lastcampaigns = $this->getCampaigns('fields=id,title,lastactive,frequency&limit=5&where=AND UNIX_TIMESTAMP(lastactive)>0&orderby=lastactive');
     $campaigns = $this->getCampaigns('fields=id,title,count&limit=5&orderby=count');
-    $command = attribute_escape('*/10 * * * * /usr/bin/ftp ' . $this->pluginpath  . '/cron.php?code=' . get_option('wpo_croncode'));
     
     include(WPOTPL . 'home.php');
-  }           
+  }      
+  
+  /** 
+   * Setup admin
+   *
+   *
+   */
+  function adminSetup()
+  {
+    if($_POST)
+    {
+      update_option('wpo_unixcron', isset($_REQUEST['option_unixcron']));
+      update_option('wpo_setup', 1);
+      
+      header('Location: ' . $this->adminurl);
+      exit;
+    }
+    
+    $php = WPOTools::getBinaryPath('php', '/usr/bin/php');
+    $nophp = !file_exists($php);        
+    $safe_mode = ini_get('safe_mode');
+        
+    $command = $this->$this->cron_command;
+    $url = $this->cron_url;
+        
+    include(WPOTPL . 'setup.php');
+  }     
 
   /**
    * List campaigns section
@@ -1118,7 +1151,8 @@ class WPOMatic {
   {  
               
     if(isset($_REQUEST['update']))
-    {        
+    {              
+      update_option('wpo_unixcron',     isset($_REQUEST['option_unixcron']));
       update_option('wpo_log',          isset($_REQUEST['option_logging']));
       update_option('wpo_cacheimages',  isset($_REQUEST['option_caching']));
       update_option('wpo_cachepath',    rtrim($_REQUEST['option_cachepath'], '/'));
@@ -1329,23 +1363,6 @@ class WPOMatic {
       }
     }
   }
-  
-  /**
-   * Version check section (ajax)
-   *
-   *
-   */
-  function adminVersioncheck()
-  {                                                                        
-    if($a = @file_get_contents('http://devthought.com/wpomatic-check.php?v=' . $this->version))
-    {
-      setcookie('wpo_version', $a, time() + 3600 * 24);
-      echo $a;
-    } else
-      echo '(timeout)';
-    
-    exit;
-  }  
   
   /**
    * Tests a feed
@@ -1795,4 +1812,4 @@ class WPOMatic {
   }
 }        
 
-$wpomatic = & new WPOMatic();  
+$wpomatic = & new WPOMatic();

@@ -19,18 +19,6 @@
 
         <p id="log_status"><?php _e(sprintf('Logging is currently <strong>%s</strong>', __($logging ? 'enabled' : 'disabled')), 'wpomatic') ?> (<a title="<?php _e('We recommend keeping logging on only when experimenting with new feeds.', 'wpomatic') ?>" href="<?php echo $this->adminurl ?>&amp;s=options"><?php _e('change', 'wpomatic')?></a>).</p>
       </div>
-      
-      <?php if(get_option('wpo_unixcron')): ?>
-      <div id="sidebar_cron"> 
-        <a href="<?php echo $this->helpurl ?>cron" class="help_link"><?php _e('Help', 'wpomatic') ?></a>                                                                        
-        <h3>&rsaquo; <?php _e('Cron configuration', 'wpomatic') ?></h3>
-        <p><?php _e('Make sure this line is loaded in your crontab:', 'wpomatic') ?></p>
-        <p id="command">
-          <a href="#" id="command_select">Select</a>
-          <input type="text" value="<?php echo $command ?>" id="command_input" />
-        </p>
-      </div>
-      <?php endif ?>
     </div>  
     
     <div id="main">             
@@ -84,11 +72,6 @@
         <?php endforeach; ?>  
       </ol>       
       <?php endif; ?>
-                
-      <div id="versioncheck">
-        <h3><?php _e('WP-o-Matic Version', 'wpomatic') ?></h3>
-        <p><?php _e('Your WP-o-Matic version is...', 'wpomatic') ?> <strong id="version"><?php echo (isset($_COOKIE['wpo_version'])) ? $_COOKIE['wpo_version'] : '' ?></strong></p>
-      </div>  
           
     </div>
   </div>

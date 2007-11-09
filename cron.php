@@ -4,6 +4,10 @@
 	                                     
 	nocache_headers();
 	
+	// if uninstalled, let's not do anything
+	if(! get_option('wpo_version'))
+	  return false;
+	
 	// check password
 	if(isset($_REQUEST['code']) && $_REQUEST['code'] == get_option('wpo_croncode')) 
 	{

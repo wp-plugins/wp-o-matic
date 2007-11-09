@@ -9,11 +9,6 @@ Object.extend(String.prototype, {
 })
 
 Event.observe( window, 'load', function(){
-	if($('version') && $('version').innerHTML == '' ) {
-		new Ajax.Updater( 'version', 'admin-ajax.php', {
-		  parameters: $H({ 'action': 'versioncheck', 'cookie': encodeURIComponent(document.cookie) })      
-		});               
-	}                
 		
 	if($('edit_tabs')) {
 		$$('#edit_tabs a').each(function(el){  
@@ -136,13 +131,6 @@ Event.observe( window, 'load', function(){
 	    Event.stop(event);			
 	  }, false);
 	});
-	
-	if($('command_select')) {
-  	Event.observe('command_select', 'click', function(event){
-	    $('command_input').select()
-  	  Event.stop(event);
-  	}, false);
-  }
   
   if($('option_cachepath'))
     Event.observe('option_cachepath', 'keyup', function(){
@@ -158,6 +146,55 @@ Event.observe( window, 'load', function(){
 	    inputs.each(function(i){ i.checked = el.checked; });
 	  });
 	});
+	
+	// setup steps
+	if($('setup'))
+	{
+	  var stepsnum = $A($('setup_steps').getElementsByTagName('LI')).length;
+	  var current = $('setup_steps').getElementsBySelector('.current').first();
+	  var current_index = parseInt(current.id.replace('step_', ''));
+	  
+	  console.log(stepsnum);
+	  
+	  var enable_button = function(input) {
+	    var input = $(input);
+	    input.disabled = false;
+	    Element.removeClassName(input, 'disabled');
+	  }
+	  
+	  var disable_button = function(input) {
+	    var input = $(input);
+	    input.disabled = 'disabled';
+	    Element.addClassName(input, 'disabled');
+	  }
+	  
+	  var update_buttons_status = function() {
+	    disable_button('setup_button_submit');
+	    disable_button('setup_button_next');
+	    disable_button('setup_button_previous');
+	    if(current_index > 1) enable_button('setup_button_previous');
+	    if(current_index < stepsnum) enable_button('setup_button_next');
+	    if(current_index == stepsnum) enable_button('setup_button_submit');
+	  }
+	  
+	  var show_page = function(index)
+	  {
+	    Element.removeClassName('step_' + current_index, 'current');
+	    console.log(index);
+	    current_index = index;	    
+	    Element.addClassName('step_' + current_index, 'current');
+      update_buttons_status();  
+      $('current_indicator').innerHTML = index;
+	  }
+	  
+	  Event.observe('setup_button_next', 'click', function(){
+	    if(current_index < stepsnum ) show_page(current_index + 1);
+	  });
+	  
+	  Event.observe('setup_button_previous', 'click', function(){
+	    if(current_index > 1) show_page(current_index - 1);
+	  });
+	}
 	       
 	if($('import_mode_2'))
   	Event.observe('import_custom_campaign', 'change', function(){ $('import_mode_2').checked = true });  	
@@ -172,4 +209,4 @@ Event.observe( window, 'load', function(){
 				if(e) e[e.type.test('checkbox|radio') ? 'click' : 'focus']();
 			}, false);
 		})                                                     
-}, false );                                                                                              
+}, false );

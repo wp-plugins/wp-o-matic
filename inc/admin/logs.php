@@ -20,7 +20,7 @@
     <?php if($logs): ?>
     <ul id="logs">
     <?php foreach($logs as $log): ?>
-      <li><?php echo $log->message ?></li>
+      <li><?php echo $log->date ?> - <?php echo $log->message ?></li>
     <?php endforeach ?>
     </ul>
     <?php else: ?>
