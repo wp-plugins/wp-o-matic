@@ -49,6 +49,7 @@
       <li id="step_<?php echo ($safe_mode) ? 5 : 4 ?>">
         <p><?php _e('And you\'re done!', 'wpomatic') ?></p>
         <p><?php _e('Remember that these settings can be edited from the Options tab in the future.') ?></p>
+        <p><strong><?php _e('Hit Submit to complete the installation.') ?></strong></p>
       </li>
     </ol>
     
