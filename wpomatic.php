@@ -991,7 +991,7 @@ class WPOMatic {
       update_option('wpo_unixcron', isset($_REQUEST['option_unixcron']));
       update_option('wpo_setup', 1);
       
-      header('Location: ' . $this->adminurl);
+      $this->adminHome();
       exit;
     }
     
