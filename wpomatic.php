@@ -382,7 +382,7 @@ class WPOMatic {
     foreach($items as $item)
     {
       $this->processItem($campaign, $feed, $item);
-      $lasthash = $item->get_id();
+      $lasthash = $item->get_id(true);
     }
     
     // If we have added items, let's update the hash
