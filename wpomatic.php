@@ -5,7 +5,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0pre                   
+ * Version: 1.0pre2                   
  * =======================================================================
  
  Todo:
@@ -66,7 +66,7 @@ require_once( WPOINC . 'tools.class.php' );
             
 class WPOMatic {               
             
-  var $version = '1.0pre';              
+  var $version = '1.0pre2';              
                            
   # Editable options
   var $delete_tables = false;  # only if you know what you're doing
@@ -368,7 +368,7 @@ class WPOMatic {
     
     foreach($simplepie->get_items() as $item)
     {
-      if($feed->hash == $item->get_id())
+      if($feed->hash == $item->get_id(true))
       {
         if($count == 0) $this->log('No new posts');
         break;
