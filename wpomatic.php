@@ -5,7 +5,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0pre2                   
+ * Version: 1.0pre3                   
  * =======================================================================
  
  Todo:
@@ -54,6 +54,10 @@
    Added compatibility with Wordpress 2.3
    Added setup screen
    
+ - 1.0pre3
+   Stopped using simplepie get_id in favor of our own simpler hash generation
+   Fixed setup screen bug
+   
 */    
                          
 # WP-o-Matic paths. With trailing slash.
@@ -66,7 +70,7 @@ require_once( WPOINC . 'tools.class.php' );
             
 class WPOMatic {               
             
-  var $version = '1.0pre2';              
+  var $version = '1.0pre3';              
                            
   # Editable options
   var $delete_tables = false;  # only if you know what you're doing
@@ -368,7 +372,7 @@ class WPOMatic {
     
     foreach($simplepie->get_items() as $item)
     {
-      if($feed->hash == $item->get_id(true))
+      if($feed->hash == $this->getItemHash($item))
       {
         if($count == 0) $this->log('No new posts');
         break;
@@ -382,7 +386,7 @@ class WPOMatic {
     foreach($items as $item)
     {
       $this->processItem($campaign, $feed, $item);
-      $lasthash = $item->get_id(true);
+      $lasthash = $this->getItemHash($item);
     }
     
     // If we have added items, let's update the hash
@@ -398,7 +402,17 @@ class WPOMatic {
     }
     
     return $count;
-  }                
+  }              
+  
+  /**
+   * Processes an item
+   *
+   * @param   $item       object    SimplePie_Item object
+   */
+  public function getItemHash($item)
+  {
+    return sha1($item->get_title() . $item->get_permalink());
+  }  
    
   /**
    * Processes an item
@@ -469,7 +483,7 @@ class WPOMatic {
   {
     $date = ($timestamp) ? gmdate('Y-m-d H:i:s', $timestamp) : null;
     $postid = wp_insert_post(array(
-		  'post_title' 	            => $title,
+		'post_title' 	            => $title,
   		'post_content'  	        => $content,
   		'post_content_filtered'  	=> $content,
   		'post_category'           => $category,
@@ -986,7 +1000,7 @@ class WPOMatic {
    */
   function adminSetup()
   {
-    if($_POST)
+    if(isset($_POST['dosetup']))
     {
       update_option('wpo_unixcron', isset($_REQUEST['option_unixcron']));
       update_option('wpo_setup', 1);
@@ -1037,10 +1051,10 @@ class WPOMatic {
     {
       check_admin_referer('wpomatic-edit-campaign');
       
-      if(! $this->errno)
-        $addedid = $this->adminProcessAdd();
-      else      
+      if($this->errno)
         $data = $this->campaign_data;
+      else
+        $addedid = $this->adminProcessAdd();   
     }
     
     $categories = $this->getBlogCategories();	      

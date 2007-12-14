@@ -258,7 +258,7 @@
           <div class="checkbox">
             <?php echo label_for('campaign_cacheimages', __('Cache images', 'wpomatic')) ?>
             <?php echo checkbox_tag('campaign_cacheimages', 1, _data_value($data['main'], 'cacheimages', true)) ?>            
-            <p class="note"><?php _e('Images will be stored in your server, instead of', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>image_caching" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
+            <p class="note"><?php _e('Images will be stored in your server, instead of hotlinking from the original site.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>image_caching" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
           </div>   
                                              
           <div class="checkbox">

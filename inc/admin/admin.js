@@ -197,13 +197,5 @@ Event.observe( window, 'load', function(){
   	Event.observe('import_custom_campaign', 'change', function(){ $('import_mode_2').checked = true });  	
   	
   if($('import_mode_3'))
-	  Event.observe('import_new_campaign', 'keyup', function(){ $('import_mode_3').checked = true });	
-	                    
-	if (/Konqueror|Safari|KHTML/.test(navigator.userAgent))                                                
-		$$('label').each(function(el){
-			Event.observe(el, 'click', function(){         
-				var e = $(el.getAttribute('for'));          
-				if(e) e[e.type.test('checkbox|radio') ? 'click' : 'focus']();
-			}, false);
-		})                                                     
+	  Event.observe('import_new_campaign', 'keyup', function(){ $('import_mode_3').checked = true });		                                                                  
 }, false );
