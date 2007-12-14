@@ -335,11 +335,13 @@
             </ul>
           </div>    
           
+          <!-- 
           <div class="btn">   
             <label><?php _e('Test all feeds', 'wpomatic') ?></label>
             <input type="button" name="campaign_tool_testall_btn" value="Test" />
             <p class="note"><?php _e('This option creates one draft from each feed you added.', 'wpomatic') ?></p>
           </div>
+          -->
         </div>
         <?php endif ?>
       </div>  
