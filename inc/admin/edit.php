@@ -337,8 +337,8 @@
               </li>
               <li>
                 <div class="text">
-                  <label for="campaign_tool_changeauthor"><?php _e('Change author username to:', 'wpomatic')?></label>
-                  <?php echo select_tag('campaign_tool_changeauthor', options_for_select($author_usernames, _data_value($data['main'], 'author', 'admin')) ?>
+                  <label for="campaign_tool_changeauthor"><?php _e('Change author username to:', 'wpomatic') ?></label>
+                  <?php echo select_tag('campaign_tool_changeauthor', options_for_select($author_usernames, _data_value($data['main'], 'author', 'admin'))) ?>
                   
                   <input type="submit" name="tool_changeauthor" value="<?php _e('Change', 'wpomatic') ?>" />
                 </div>
