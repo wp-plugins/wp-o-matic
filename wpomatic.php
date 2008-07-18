@@ -5,7 +5,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0RC4-3
+ * Version: 1.0RC4-4
  * =======================================================================
  
  Todo:
@@ -99,12 +99,12 @@
    
   r1
    MySQL incompatibility with query solved
-   
   r2 
    Hostings with basedir restriction now don't show errors
-   
   r3 
    Fixed date issue that might have caused potential duplication problems
+  r4
+   Fixed cron job mysql query
 */    
                          
 # WP-o-Matic paths. With trailing slash.
@@ -118,7 +118,7 @@ require_once( WPOINC . 'tools.class.php' );
 class WPOMatic {               
              
   # Internal
-  var $version = '1.0RC4-3';   
+  var $version = '1.0RC4-4';   
                         
   var $newsetup = false;  # true if this version introduces setup changes
   
@@ -964,7 +964,7 @@ class WPOMatic {
   	  $where .= " AND title LIKE '%{$search}%' ";
   	  
   	if($unparsed)
-  	  $where .= " AND active = 1 AND (frequency + lastactive) < ". current_time('timestamp', true) . " ";
+  	  $where .= " AND active = 1 AND (frequency + UNIX_TIMESTAMP(lastactive)) < ". current_time('timestamp', true) . " ";
   	                              
   	$sql = "SELECT $fields FROM {$this->db['campaign']} WHERE 1 = 1 $where "
          . "ORDER BY $orderby $ordertype $limit";
