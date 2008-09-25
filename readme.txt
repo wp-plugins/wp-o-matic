@@ -1,10 +1,10 @@
 === WP-o-Matic ===
 Contributors: Appletalk
 Donate link: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/#donate
-Tags: autoblogging, feeds, rss, atom, aggregation, content, syndication, posts, post, writing, bot, admin
+Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, post, writing, bot, admin, automation, aggregator, page, rapid, creation, generation, seo
 Requires at least: 2.2.1
-Tested up to: 2.6
-Stable tag: trunk
+Tested up to: 2.6.2
+Stable tag: 1.0RC4
 
 WP-o-Matic makes autoblogging a snap by automatically creating posts from the RSS/Atom feeds you choose, which are organized into campaigns. 
 

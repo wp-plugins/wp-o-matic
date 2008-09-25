@@ -38,7 +38,7 @@
     <?php endif; ?>
                   
     <form id="edit_campaign" action="" method="post" accept-charset="utf-8">
-      <?php wp_nonce_field('wpomatic-edit-campaign') ?>
+      <?php wp_nonce_field('edit-campaign') ?>
 
       <?php if(isset($campaign_add)): ?>
         <?php echo input_hidden_tag('campaign_add', 1) ?>

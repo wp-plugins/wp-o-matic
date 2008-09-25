@@ -1,15 +1,13 @@
 <?php
-
 /*
  * Plugin Name: WP-o-Matic
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0RC4-6
+ * Version: 1.0RC5
  * =======================================================================
  
  Todo:
- 
  - 'View campaign' view, with stats, thus getting rid of Tools tab
  - Bulk actions in campaign list
  - 'Time ago' for 'Last active' (on hover) in campaign list
@@ -109,6 +107,44 @@
    Unlimited max items bug fixed.
   r6
    Fixed cron job gmt times.
+  r7
+   URL datatype of feed table changed from varchar to text.
+   
+  - 1.0RC5
+   Cron not an actual requirement anymore. Pseudocron is smarter: now, by default, in non-cron mode only one feed is processed per hit.
+   Improved setup
+   Added missing nonce for setup, options.
+   Added Fetch all button. It processes all campaigns
+   Campaign manual processing renewed. Now it waits 5 seconds before starting to process it (allowing user to cancel it), and shows a progress bar. It processes only one feed per request, which workarounds.
+   Now processing is done through javascript and ajax
+   Campaign feed count was being reset, now it's added.
+   
+   
+   TODO: 
+    - reset resets feeds processed status and campaign processing status
+    - delete all deletes category assignements and related tables (look for wp delete function)
+    
+    For 1.0:
+    - Finish IntelliCron
+    - Add uninstall link (to plugin list. uninstall also deactivates first)
+    - Plugins section, with url/upload installation
+    - Change newadmin to wpversion, which should contain '25', '26', '27'
+
+    Todo:
+
+    - 'View campaign' view, with stats, thus getting rid of Tools tab
+    - Bulk actions in campaign list
+    - 'Time ago' for 'Last active' (on hover) in campaign list
+    - More advanced post templates
+    - Import drag and drop to current campaigns.
+    - Export extended OPML to save WP-o-Matic options
+    - Proper commenting
+
+    Future plugins:
+     - Image thumbnailing
+     - Favicon fetch
+     - Limit number of characters
+    
 */    
                          
 # WP-o-Matic paths. With trailing slash.
@@ -117,17 +153,15 @@ define('WPOINC', WPODIR . 'inc/');
 define('WPOTPL', WPOINC . 'admin/');
     
 # Dependencies                            
-require_once( WPOINC . 'tools.class.php' );               
+require_once(WPOINC . 'tools.class.php');
             
 class WPOMatic {               
              
   # Internal
-  var $version = '1.0RC4-6';   
+  var $version = '1.0RC5';   
                         
-  var $newsetup = false;  # true if this version introduces setup changes
-  
   var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'import', 'export',
-                        'reset', 'delete', 'logs', 'testfeed', 'forcefetch');  
+                        'reset', 'delete', 'logs', 'testfeed', 'fetch', 'processcampaign');  
                         
   var $campaign_structure = array('main' => array(), 'rewrites' => array(), 
                                   'categories' => array(), 'feeds' => array());
@@ -145,7 +179,7 @@ class WPOMatic {
       'campaign_word'       => $wpdb->prefix . 'wpo_campaign_word',   
       'campaign_post'       => $wpdb->prefix . 'wpo_campaign_post',
       'log'                 => $wpdb->prefix . 'wpo_log'
-    );                                    
+    );
     
     # Are we running the new admin panel (2.5+) ?
     $this->newadmin = version_compare($wp_version, '2.5.0', '>=');
@@ -155,16 +189,19 @@ class WPOMatic {
     $this->setup = get_option('wpo_setup');
     
     # Actions
-    add_action('activate_wp-o-matic/wpomatic.php', array(&$this, 'activate'));                # Plugin activated
-    add_action('deactivate_wp-o-matic/wpomatic.php', array(&$this, 'deactivate'));            # Plugin deactivated
     add_action('init', array(&$this, 'init'));                                                # Wordpress init      
     add_action('admin_head', array(&$this, 'adminHead'));                                     # Admin head
     add_action('admin_footer', array(&$this, 'adminWarning'));                                # Admin footer
     add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation            
+    register_activation_hook(__FILE__, array(&$this, 'activate'));                            # Plugin activated
+    register_activation_hook(__FILE__, array(&$this, 'deactivate'));                          # Plugin deactivated
+    if(function_exists('register_uninstall_hook'))
+      register_uninstall_hook(__FILE__, array(&$this, 'uninstall'));
    
     # Ajax actions
     add_action('wp_ajax_delete-campaign', array(&$this, 'adminDelete'));
     add_action('wp_ajax_test-feed', array(&$this, 'adminTestfeed'));
+    add_action('wp_ajax_fetch', array(&$this, 'adminFetch'));
     
     # Filters
     add_action('the_permalink', array(&$this, 'filterPermalink'));
@@ -208,9 +245,9 @@ class WPOMatic {
     
     // only re-install if new version or uninstalled
     if($force_install || ! $this->installed || $this->installed != $this->version) 
-    {			
+    {
 			# wpo_campaign
-			dbDelta( "CREATE TABLE {$this->db['campaign']} (
+			dbDelta(  "CREATE TABLE {$this->db['campaign']} (
 							    id int(11) unsigned NOT NULL auto_increment,
 							    title varchar(255) NOT NULL default '', 
 							    active tinyint(1) default '1', 
@@ -225,8 +262,10 @@ class WPOMatic {
 							    allowpings tinyint(1) default '1',
 							    dopingbacks tinyint(1) default '1',
 							    max smallint(3) default '10',
+							    max_feeds_process smallint(3) default '1',
 							    linktosource tinyint(1) default '0',
-							    count int(11) default '0',
+							    count int(11) default '0',							    
+							    processing tinyint(1) default '0',
 							    lastactive datetime NOT NULL default '0000-00-00 00:00:00',	
 							    created_on datetime NOT NULL default '0000-00-00 00:00:00',  							  
 							    PRIMARY KEY (id)
@@ -244,12 +283,13 @@ class WPOMatic {
      dbDelta(  "CREATE TABLE {$this->db['campaign_feed']} (
   						    id int(11) unsigned NOT NULL auto_increment,
   							  campaign_id int(11) NOT NULL default '0',   
-  							  url varchar(255) NOT NULL default '',  
+  							  url text NOT NULL default '',  
   							  type varchar(255) NOT NULL default '',    
   							  title varchar(255) NOT NULL default '',   
   							  description varchar(255) NOT NULL default '',
   							  logo varchar(255) default '',                         
   							  count int(11) default '0',
+							    processed tinyint(1) default '0',
   							  hash varchar(255) default '',
   							  lastactive datetime NOT NULL default '0000-00-00 00:00:00',							    
   							  PRIMARY KEY  (id)
@@ -348,7 +388,7 @@ class WPOMatic {
     if($this->installed)
     {
       if(! get_option('wpo_unixcron'))
-        $this->processAll();   
+        $this->processAll('manual');   
 
       if(isset($_REQUEST['page']))
       {
@@ -390,7 +430,7 @@ class WPOMatic {
   function runCron($log = true)
   {
     $this->log('Running cron job');   
-    $this->processAll();
+    $this->processAll('automated');
   }   
   
   /**
@@ -438,27 +478,27 @@ class WPOMatic {
   
   /**
    * Processes all campaigns
-   *
+   *   
+   * @param   boolean   $type       automated | manual
    */
-  function processAll()
+  function processAll($type = 'manual')
   {
     @set_time_limit(0);
     
     $campaigns = $this->getCampaigns('unparsed=1');
 
     foreach($campaigns as $campaign) 
-    {
-      $this->processCampaign($campaign);
-    }
+      $this->processCampaign($campaign, $type);
   }
   
   /**
    * Processes a campaign
    *
    * @param   object    $campaign   Campaign database object
+   * @param   boolean   $type       automated | manual
    * @return  integer   Number of processed items
    */  
-  function processCampaign(&$campaign)
+  function processCampaign(&$campaign, $type = 'manual')
   {
     global $wpdb;
     
@@ -471,19 +511,43 @@ class WPOMatic {
     // Log 
     $this->log('Processing campaign ' . $campaign->title . ' (ID: ' . $campaign->id . ')');
         
+    // Mark campaign as being processed
+    if($type === 'manual' && ! $campaign->processing)
+      $wpdb->query("UPDATE {$wpdb->campaign} SET processing = 1 WHERE id = {$campaign->id} ");
+        
     // Get feeds
-    $count = 0;
     $feeds = $this->getCampaignFeeds($campaign->id);    
+    $process_feeds = $this->getCampaignFeeds($campaign->id, 'unprocessed=1');
+    $processed_feeds = 0;
+    $posts = 0;
     
     foreach($feeds as $feed)
-      $count += $this->processFeed($campaign, $feed);
+    {
+      $posts += $this->processFeed($campaign, $feed, $type);
+      $processed_feeds++;
+      if($type === 'manual' && $processed_feeds === $campaign->max_feeds_process)
+      {
+        
+        break;
+      }
+    }
+      
+    # If processed, mark it as finalized.
+    if($processed_feeds === count($feeds))
+    {
+      if($type === 'manual')
+        $wpdb->query("UPDATE {$wpdb->campaign} SET processing = 0 WHERE id = {$campaign->id} ");
+
+      # Set all feeds to unprocessed
+      $wpdb->query("UPDATE {$wpdb->campaign_feed} SET processed = 0 WHERE campaign_id = {$campaign->id} ");
+    }
 
     $wpdb->query(WPOTools::updateQuery($this->db['campaign'], array(
-      'count' => $campaign->count + $count,
+      'count' => $campaign->count + $posts,
       'lastactive' => current_time('mysql', true)
     ), "id = {$campaign->id}"));
     
-    return $count;
+    return $posts;
   } 
   
   /**
@@ -491,9 +555,10 @@ class WPOMatic {
    *
    * @param   $campaign   object    Campaign database object   
    * @param   $feed       object    Feed database object
+   * @param   $type       boolean   automated | manual   
    * @return  The number of items added to database
    */
-  function processFeed(&$campaign, &$feed)
+  function processFeed(&$campaign, &$feed, $type)
   {
     global $wpdb;
 
@@ -541,17 +606,22 @@ class WPOMatic {
     }
     
     // If we have added items, let's update the hash
+    // If the type is automatic, we leave it at unprocessed state, because we are gonna process them all.
+    $update_fields = array(
+      'processed' => ($type === 'manual') ? 1 : 0,
+      'lastactive' => current_time('mysql', true)
+    );
+    
     if($count)
-    {
-      $wpdb->query(WPOTools::updateQuery($this->db['campaign_feed'], array(
-        'count' => $count,
-        'lastactive' => current_time('mysql', true),
+      $update_fields = array_merge($update_fields, array(
+        'count' => $feed->count + $count,
         'hash' => $lasthash
-      ), "id = {$feed->id}"));    
+      ));
     
-      $this->log( $count . ' posts added' );
-    }
+    $wpdb->query(WPOTools::updateQuery($this->db['campaign_feed'], $update_fields, "id = {$feed->id}"));    
     
+    $this->log( $count . ' posts added' );
+  
     return $count;
   }              
   
@@ -630,7 +700,7 @@ class WPOMatic {
     global $wpdb;
     $hash = $this->getItemHash($item);
     $row = $wpdb->get_row("SELECT * FROM {$this->db['campaign_post']} "
-                          . "WHERE campaign_id = {$campaign->id} AND feed_id = {$feed->id} AND hash = '$hash' ");    
+                          . " WHERE campaign_id = {$campaign->id} AND feed_id = {$feed->id} AND hash = '$hash' ");    
     return !! $row;
   }
   
@@ -968,7 +1038,7 @@ class WPOMatic {
   	  $where .= " AND title LIKE '%{$search}%' ";
   	  
   	if($unparsed)
-  	  $where .= " AND active = 1 AND (frequency + UNIX_TIMESTAMP(lastactive)) < ". (current_time('timestamp', true) - get_option('gmt_offset') * 3600) . " ";
+  	  $where .= " AND active = 1 AND (((frequency + UNIX_TIMESTAMP(lastactive)) < ". (current_time('timestamp', true) - get_option('gmt_offset') * 3600) . ") OR processing = 1)";
   	                              
   	$sql = "SELECT $fields FROM {$this->db['campaign']} WHERE 1 = 1 $where "
          . "ORDER BY $orderby $ordertype $limit";
@@ -1206,8 +1276,10 @@ class WPOMatic {
    */
   function adminSetup()
   {
-    if(isset($_POST['dosetup']))
+    if($_POST)
     {
+      check_admin_referer('setup');
+      
       update_option('wpo_unixcron', isset($_REQUEST['option_unixcron']));
       update_option('wpo_setup', 1);
       
@@ -1226,6 +1298,65 @@ class WPOMatic {
         
     include(WPOTPL . 'setup.php');
   }     
+
+  
+  /**
+   * Process a campaign and fetches feeds (manual)
+   *
+   *
+   */
+  function adminProcesscampaign()
+  {
+    $campaign = $this->getCampaignById(intval($_REQUEST['id']));
+    $feedid = intval($_REQUEST['feedid']);
+    
+    if(! $feedid)
+    {
+      $feeds = $this->getCampaignFeeds($campaign->id, 'unprocessed=1');
+      if($feeds)
+      {
+        $feed = array_pop($feeds);        
+        $this->processFeed($feed->id);
+      }
+    } else    
+      $this->processFeed($feedid);
+        
+    // check for next unprocessed feed
+    $feeds = $this->getCampaignFeeds($campaign->id, 'unprocessed=1');
+    if($feeds)
+    {
+      $nextfeed = array_pop($feeds);
+      if(defined('DOING_AJAX'))
+        die('{
+          "success": 1,
+          "next": '. $nextfeed->id .'
+        }');
+    } else 
+    {
+      if(defined('DOING_AJAX'))
+        die('{"success": 1}');
+    }    
+  }
+  
+  
+  /**
+   * Fetch all campaigns
+   *
+   *
+   */
+  function adminFetch()
+  {
+    $cid = intval($_REQUEST['id']);
+    
+    if(! defined('DOING_AJAX'))
+    {
+      if($cid) // assume single campaign
+        check_admin_referer('fetch-campaign_'.$cid);    
+      else // assume multiple campaign
+        check_admin_referer('fetch-campaigns');
+    }
+    
+  }
 
   /**
    * List campaigns section
@@ -1257,7 +1388,7 @@ class WPOMatic {
   
     if(isset($_REQUEST['campaign_add']))
     {
-      check_admin_referer('wpomatic-edit-campaign');
+      check_admin_referer('edit-campaign');
       
       if($this->errno)
         $data = $this->campaign_data;
@@ -1282,7 +1413,7 @@ class WPOMatic {
     
     if(isset($_REQUEST['campaign_edit']))
     {
-      check_admin_referer('wpomatic-edit-campaign');
+      check_admin_referer('edit-campaign');
             
       $data = $this->campaign_data;
       $submitted = true;
@@ -1402,9 +1533,8 @@ class WPOMatic {
    *
    */
   function adminOptions()
-  {  
-              
-    if(isset($_REQUEST['update']))
+  {                
+    if($_POST)
     {              
       update_option('wpo_unixcron',     isset($_REQUEST['option_unixcron']));
       update_option('wpo_log',          isset($_REQUEST['option_logging']));
@@ -1415,7 +1545,7 @@ class WPOMatic {
       $updated = 1;
     }
     
-    if(!is_writable($this->cachepath))
+    if(! is_writable($this->cachepath))
       $not_writable = true;
     
     include(WPOTPL . 'options.php');
@@ -1432,7 +1562,7 @@ class WPOMatic {
     
     @session_start();
     
-    if(!$_POST) unset($_SESSION['opmlimport']);
+    if(! $_POST) unset($_SESSION['opmlimport']);
     
     if(isset($_FILES['importfile']) || $_POST)
       check_admin_referer('import-campaign');   
@@ -1499,7 +1629,7 @@ class WPOMatic {
   {
     global $wpdb;
     
-    if(isset($_REQUEST['add']))
+    if($_POST)
     {
       if(!isset($_REQUEST['feed']))
         $add_error = __('You must select at least one feed', 'wpomatic');
@@ -1636,26 +1766,6 @@ class WPOMatic {
       die();
     } else
       include(WPOTPL . 'testfeed.php');
-  }
-  
-  /**
-   * Forcedfully processes a campaign
-   *
-   *
-   */
-  function adminForcefetch()
-  {
-    $cid = intval($_REQUEST['id']);
-    
-    if(! defined('DOING_AJAX'))
-      check_admin_referer('forcefetch-campaign_'.$cid);    
-    
-    $this->forcefetched = $this->processCampaign($cid);    
-    
-    if(defined('DOING_AJAX'))
-      die('1');
-    else
-      $this->adminList();
   }
   
   /**

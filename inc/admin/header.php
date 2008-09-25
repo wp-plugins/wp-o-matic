@@ -2,6 +2,12 @@
 <?php if($this->newadmin): ?>
 <link rel="stylesheet" href="<?php echo $this->tplpath ?>/css/admin-new.css" type="text/css" media="all" title="" />  
 <?php endif ?>
+<?php if($this->iframe): ?>
+<style type="text/css">
+  /* hide all but wpocontent */
+  
+</style>
+<?php endif ?>
 
 <div id="wpomain">
 

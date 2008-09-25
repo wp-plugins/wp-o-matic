@@ -1,8 +1,8 @@
 <?php $this->adminHeader() ?>
 
-  <form action="<?php echo $this->adminurl ?>&amp;s=setup" method="post">
-    <input type="hidden" name="dosetup" value="1" id="dosetup" />
-    
+  <form action="<?php echo $this->adminurl ?>&amp;s=setup" method="post">    
+    <?php wp_nonce_field('setup') ?>    
+          
     <div id="wpo-section-setup" class="wrap">
       <h2><?php _e('Setup', 'wpomatic') ?></h2>     
     
@@ -27,6 +27,41 @@
         </li>
       
         <li id="step_3">
+          <p><?php _e('Do you want to process campaigns in automated or manual mode?', 'wpomatic') ?></p>
+          <ul class="radio_options">
+            <li><input type="radio" name="mode" value="yes" id="option_mode_automated" /> <label for="option_mode_automated"><?php _e('Automated', 'wpomatic') ?></label></li> 
+            <li><input type="radio" name="mode" value="no" id="option_mode_manual" /> <label for="option_mode_manual"><?php _e('Manual', 'wpomatic') ?></label></p></li>
+          </ul>
+          
+          <div class="answer_mode" id="mode_automated">
+            <p><?php _e('What type of automation are you going to use?', 'wpomatic') ?></p>
+            <ul class="radio_options">
+              <li><input type="radio" name="automated_mode" value="cron" id="option_automated_mode_cron" /> <label for="option_automated_mode_cron"><?php _e('Cron', 'wpomatic') ?></label></li> 
+                <li><input type="radio" name="automated_mode" value="webcron" id="option_automated_mode_webcron" /> <label for="option_automated_mode_webcron"><?php _e('WebCron', 'wpomatic') ?></label></li>
+              <li><input type="radio" name="automated_mode" value="visitor" id="option_automated_mode_visit" /> <label for="option_automated_mode_visitor"><?php _e('Visitor', 'wpomatic') ?></label></p></li>
+            </ul>
+            
+            <div class="answer_automated_mode" id="automated_mode_cron">
+              <p>This method uses the unix <a href="http://en.wikipedia.org/wiki/Cron">Cron</a> system.</p>
+              <p>Advantages:</p>
+              <ol>
+                <li></li>
+              </ol>
+              
+              <p>Disadvantages:</p>
+              <ol>
+                <li></li>
+              </ol>
+            </div>
+            
+            // complete
+            
+          </div>
+          
+          <div class="answer_mode" id="mode_manual">
+            <p>Fine! You'll have to click <strong>Fetch</strong> on those campaigns you want to process, or click <strong>Fetch all</strong> to process all of them at the same time. The latter, however, may take a lot of time!</p>
+          </div>
+          
           <p><?php _e('If you want to go automated, and let WP-o-Matic do the nasty job of pulling rss feeds and creating posts, you need to set up a <strong>cron job</strong>. For performance reasons, it\'s highly recommended that you do so, but you can also let WP-o-Matic handle it in browser requests.', 'wpomatic') ?></p>
         
           <p><?php printf(__('Add this line to your crontab, or use your web panel of choice interface. %s', 'wpomatic'), ($nophp) ? __('<strong>Warning!</strong> WP-o-Matic has been unable to detect the location of the wget command. This means you\'ll have to check it exists from the command line or find it by your own. In the case it\'s not installed, you can alternative use the ftp command, or lynx -dump', 'wpomatic') : '') ?></p>

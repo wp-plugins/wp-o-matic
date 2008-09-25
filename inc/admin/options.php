@@ -13,7 +13,7 @@
     <?php endif ?>
 
     <form action="" method="post" accept-charset="utf-8">      
-      <input type="hidden" name="update" value="1" />
+    <?php wp_nonce_field('options') ?>    
       
       <ul id="options">
         <li id="options_cron">
