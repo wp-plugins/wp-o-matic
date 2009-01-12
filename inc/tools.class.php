@@ -365,3 +365,12 @@ if(!function_exists('str_ireplace'))
     return preg_replace($words, $replace, $subject);
   }
 }
+
+if(!function_exists('date_default_timezone_set')) 
+{
+  function date_default_timezone_set($timezone_identifier) 
+  {
+    putenv("TZ=".$timezone_identifier);
+    return TRUE;
+  }
+}

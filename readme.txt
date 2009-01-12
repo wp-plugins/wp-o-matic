@@ -1,7 +1,7 @@
 === WP-o-Matic ===
 Contributors: Appletalk
 Donate link: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/#donate
-Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, post, writing, bot, admin, automation, aggregator, page, rapid, creation, generation, seo
+Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, Post, writing, bot, admin, automation, aggregator, page, pages, rapid, creation, generation, seo, AJAX, google, images, caching, cache, fetch, categories, category
 Requires at least: 2.2.1
 Tested up to: 2.6.2
 Stable tag: 1.0RC4
