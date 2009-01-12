@@ -105,8 +105,9 @@ class WPOMatic {
     # We reference some useful WP variables here
     $this->wpdb = & $wpdb;
     $this->wpversion = $wp_version;
+        
     # The branch contains the first two digits for easy version comparison (ie, 25 = 2.5.x, 26 = 2.6.x, 27 = 2.7.x)
-    $this->wpbranch = (int) str_replace('.', '', substr(0, 3, $wp_version));
+    $this->wpbranch = (int) str_replace('.', '', substr($wp_version, 0, 3));
     
     # Is installed ?
     $this->installed = get_option('wpo_version') == $this->version;
@@ -114,13 +115,14 @@ class WPOMatic {
     
     # Actions
     add_action('init', array(&$this, 'init'));                                                # Wordpress init      
-    add_action('admin_head', array(&$this, 'adminHead'));                                     # Admin head
-    add_action('admin_footer', array(&$this, 'adminWarning'));                                # Admin footer
-    add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation            
+    add_action('admin_head', array(&$this, 'adminWPHeader'));                                 # Admin head
+    add_action('admin_footer', array(&$this, 'adminWPFooter'));                               # Admin footer
+    add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation 
+    add_action('admin_notices', array(&$this, 'adminWarning'));                               # Admin warnings
     register_activation_hook(__FILE__, array(&$this, 'activate'));                            # Plugin activated
     register_activation_hook(__FILE__, array(&$this, 'deactivate'));                          # Plugin deactivated
     if(function_exists('register_uninstall_hook'))
-      register_uninstall_hook(__FILE__, array(&$this, 'uninstall'));      
+      register_uninstall_hook(__FILE__, array(&$this, 'uninstall'));        
    
     # Ajax actions
     add_action('wp_ajax_delete-campaign', array(&$this, 'adminDelete'));
@@ -133,7 +135,7 @@ class WPOMatic {
    
     # WP-o-Matic URIs. Without trailing slash               
     $this->optionsurl = get_option('siteurl') . '/wp-admin/options-general.php';                                           
-    $this->adminurl = $this->optionsurl . '?page=wpomatic.php';
+    $this->adminurl = $this->optionsurl . '?page=wp-o-matic/wpomatic.php';
     $this->pluginpath = get_option('siteurl') . '/wp-content/plugins/wp-o-matic';           
     $this->helpurl = $this->pluginpath . '/help.php?item=';
     $this->tplpath = $this->pluginpath . '/inc/admin';
@@ -316,13 +318,16 @@ class WPOMatic {
         do_action('wpo_pseudo_cron');
       }  
 
-      if(isset($_REQUEST['page']) && $_REQUEST['page'] == 'wpomatic.php')
+      if(isset($_REQUEST['page']) && (strstr($_REQUEST['page'], 'wpomatic.php') || strstr($_REQUEST['page'], 'wpo_')))
       {
         if(isset($_REQUEST['campaign_add']) || isset($_REQUEST['campaign_edit']))
           $this->adminCampaignRequest();
 
         if(isset($_REQUEST['export_campaign']))
           $this->adminExportRequest();
+          
+        if(strstr($_REQUEST['page'], 'wpo_'))
+          $_REQUEST['s'] = str_replace('wpo_', '', $_REQUEST['page']);
           
         $this->adminInit();  
       }        
@@ -1162,8 +1167,8 @@ class WPOMatic {
    * 
    */
   function adminInit() 
-  {                 
-    auth_redirect();
+  {             
+    if(! current_user_can('manage_options')) die('Unauthorized');
     
     // force display of a certain section    
     $this->section = ($this->setup) ? ((isset($_REQUEST['s']) && $_REQUEST['s']) ? $_REQUEST['s'] : $this->sections[0]) : 'setup';
@@ -1174,9 +1179,12 @@ class WPOMatic {
     if($this->section == 'list')
       wp_enqueue_script('listman');
           
+    // TODO: enqueue css here ?
+          
     do_action('wpo_admin_init');
           
-    if(WPOTools::isAjax())
+    // TODO: check
+    if(defined('DOING_AJAX'))
     {              
       $this->admin();
       exit;
@@ -1188,7 +1196,7 @@ class WPOMatic {
    *
    * @return void
    **/
-  function adminHead()
+  function adminWPHeader()
   {
     $this->admin = true;
   }
@@ -1201,26 +1209,19 @@ class WPOMatic {
   function adminWarning()
   {
     if(! $this->setup && $this->section != 'setup')
-    {
-      echo "<div id='wpo-warning' class='updated fade-ff0000'><p>" . sprintf(__('Please <a href="%s">click here</a> to setup and configure WP-o-Matic.', 'wpomatic'), $this->adminurl . '&amp;s=setup') . "</p></div>
-
-  		  <style type='text/css'>
-  		    " . (version_compare($this->wpversion, '2.5', '>=')
-  		    ?
-  		    "
-  		    #wpo-warning { position: absolute; top: 4em; right: 0 }
-  		    "
-  		    :
-  		    "
-  		    #adminmenu { margin-bottom: 5em; }
-  		    #wpo-warning { position: absolute; top: 6.8em; }
-  		    "
-  		    )
-  		    .
-  		    "
-  		  </style>
-  	  "; 
-    }
+    {      
+      echo "<div id='wpo-warning' class='updated fade-ff0000'><p>" . sprintf(__('WP-o-Matic has been installed but it hasn\'t been configured yet. Please <a href="%s">click here</a> to setup and configure WP-o-Matic.', 'wpomatic'), $this->adminurl . '&amp;s=setup') . "</p></div>"; 
+    }  
+  }
+  
+  /**
+   * Called by admin-footer.php
+   * 
+   * 
+   */
+  function adminWPFooter()
+  {
+    
   }
   
   /**
@@ -1228,7 +1229,7 @@ class WPOMatic {
    * 
    *
    */
-  function admin()
+  function admin($section = null)
   {                       
     if(in_array($this->section, $this->sections))
     {    
@@ -1250,8 +1251,22 @@ class WPOMatic {
   function adminMenu()
   {
     if($this->wpbranch >= 27) 
-      // add top level submenues
+    {
+      // add top level menu
+      add_menu_page('WP-o-Matic', 'WP-o-Matic', 8, __FILE__, array(&$this, 'admin'));
       
+      if($this->setup)
+      {
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Dashboard', 8, 'wpo_home', array(&$this, 'admin'));
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Campaigns', 8, 'wpo_list', array(&$this, 'admin'));      
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Add campaign', 8, 'wpo_add', array(&$this, 'admin'));      
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Options', 8, 'wpo_options', array(&$this, 'admin'));      
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Import', 8, 'wpo_import', array(&$this, 'admin'));
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Export', 8, 'wpo_export', array(&$this, 'admin'));
+      }
+      else
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Setup', 8, __FILE__, array(&$this, 'admin'));      
+    }       
     else
       add_submenu_page('options-general.php', 'WP-o-Matic', 'WP-o-Matic', 10, basename(__FILE__), array(&$this, 'admin'));
       
@@ -1367,7 +1382,7 @@ class WPOMatic {
   function adminProcesscampaign()
   {
     $cid = intval($_REQUEST['id']);
-    check_admin_referer('wpo_processcampaign-' . $cid)
+    check_admin_referer('wpo_processcampaign-' . $cid);
     
     $campaign = $this->getCampaignById($cid);
     $feedid = intval($_REQUEST['feedid']);
@@ -1432,6 +1447,8 @@ class WPOMatic {
    */
   function adminList()
   {             
+    $this->section = 'list';
+    
     if(isset($_REQUEST['q']))
     {
       $q = $_REQUEST['q'];
@@ -1572,7 +1589,7 @@ class WPOMatic {
     do_action('wpo_admin-reset');
       
     if(defined('DOING_AJAX'))
-      $this->json = array('success' => 1)
+      $this->json = array('success' => 1);
     else
       $this->adminList();
   }
@@ -1610,6 +1627,8 @@ class WPOMatic {
    */
   function adminOptions()
   {                
+    $this->section = 'options';
+    
     if($_POST)
     {              
       update_option('wpo_unixcron',     isset($_REQUEST['option_unixcron']));
@@ -1835,9 +1854,9 @@ class WPOMatic {
     
     do_action('wpo_admin-testfeed');    
     
-    if(defined('DOING_AJAX')){
-      $this->json = array('status' => $works)
-    } else
+    if(defined('DOING_AJAX'))
+      $this->json = array('status' => (int) $works);
+    else
       include(WPOTPL . 'testfeed.php');
   }
   
