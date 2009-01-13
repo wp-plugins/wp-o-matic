@@ -1173,6 +1173,7 @@ class WPOMatic {
     // force display of a certain section    
     $this->section = ($this->setup) ? ((isset($_REQUEST['s']) && $_REQUEST['s']) ? $_REQUEST['s'] : $this->sections[0]) : 'setup';
     
+    wp_enqueue_script('jquery');
     wp_enqueue_script('prototype');
     wp_enqueue_script('wpoadmin', $this->tplpath . '/admin.js', array('prototype'), $this->version);
     

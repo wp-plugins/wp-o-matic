@@ -1,3 +1,10 @@
+#wpomain, #wpofooter {
+  height: auto !important;
+  height: 1%;
+  overflow: visible;
+  max-width: inherit;
+}
+
 #wpocontent {
   margin-left: 0;
 }
