@@ -69,9 +69,9 @@ require_once(WPOINC . 'tools.class.php');
 class WPOMatic {               
              
   # Internal
-  var $version = '1.0RC5';   
+  var $version = '1.5alpha1';   
                         
-  var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'uninstall', 'import', 'export', 'reset', 'delete', 'logs', 'testfeed', 'fetch', 'processcampaign');  
+  var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'uninstall', 'import', 'export', 'reset', 'delete', 'logs', 'testfeed', 'fetch', 'processcampaign');
                         
   var $campaign_structure = array('main' => array(), 'rewrites' => array(), 'categories' => array(), 'feeds' => array());
   
@@ -89,8 +89,9 @@ class WPOMatic {
   function WPOMatic()
   {              
     global $wpdb, $wp_version;
-    
-    date_default_timezone_set(get_option('gmt_offset'));
+        
+    //date_default_timezone_offset_set(get_option('gmt_offset'));
+//    print_r(timezone_abbreviations_list());
                                    
     # Table names init
     $this->db = array(
@@ -280,6 +281,13 @@ class WPOMatic {
     
     // Delete options
     WPOTools::deleteOptions(array('wpo_log', 'wpo_log_stdout', 'wpo_unixcron', 'wpo_unixcron_max', 'wpo_croncode', 'wpo_cacheimages', 'wpo_cachepath'));
+    
+    // Redirect to deactivation if necessary
+    if(isset($_REQUEST['uninstall']))
+    {
+      header('Location: deactivate');
+      exit;
+    }
   }                                
   
   /** 
@@ -447,13 +455,18 @@ class WPOMatic {
   // to be called by pseudocron
   function processOne($type = 'manual')
   {
+    @session_start();
     @set_time_limit(0);
+      
+    if(isset($_SESSION['wpo_processed']) && $_SESSION['wpo_processed'])
+      return 1;
       
     $campaigns = $this->getCampaigns('unparsed=1');
     
     foreach($campaigns as $campaign) 
     {
-      $this->processCampaign($campaign, $type);
+      $this->processCampaign($campaign, $type, 1);
+      $_SESSION['wpo_processed'] = 1;
       break;
     }      
     
@@ -474,7 +487,7 @@ class WPOMatic {
    * @param   boolean   $type       automated | manual
    * @return  integer   Number of processed items
    */  
-  function processCampaign(&$campaign, $type = 'manual')
+  function processCampaign(&$campaign, $type = 'manual', $max_feeds_process = 0)
   {
     @set_time_limit(0);
     ob_implicit_flush();
@@ -499,7 +512,7 @@ class WPOMatic {
     
     foreach($feeds as $feed)
     {
-      if($type === 'manual' && $campaign->max_feeds_process && $processed_feeds === $campaign->max_feeds_process)
+      if($type === 'manual' && ($campaign->max_feeds_process && $processed_feeds === $campaign->max_feeds_process) || ($max_feeds_process && $processed_feeds === $max_feeds_process))
         break;
       
       $posts += $this->processFeed(&$campaign, &$feed, $type);

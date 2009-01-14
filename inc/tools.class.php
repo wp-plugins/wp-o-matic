@@ -356,7 +356,7 @@ if ( !function_exists('file_put_contents') && !defined('FILE_APPEND') )
 
 if(!function_exists('str_ireplace'))
 {
-  function str_Ireplace($search, $replace, $subject) 
+  function str_ireplace($search, $replace, $subject) 
   {
     if (is_array($search))
       foreach ($search as $word) $words[] = "/".$word."/i";
@@ -366,11 +366,7 @@ if(!function_exists('str_ireplace'))
   }
 }
 
-if(!function_exists('date_default_timezone_set')) 
+function date_default_timezone_offset_set($timezone_identifier) 
 {
-  function date_default_timezone_set($timezone_identifier) 
-  {
-    putenv("TZ=".$timezone_identifier);
-    return TRUE;
-  }
+  putenv("TZ=".$timezone_identifier);
 }

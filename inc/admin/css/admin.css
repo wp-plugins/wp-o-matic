@@ -589,13 +589,13 @@ div.error ul li {
   border-width: 1px 0;
 }
 
-#setup_steps li {
+#setup_steps li.step {
   margin-bottom: 30px;
   list-style-type: none;
   display: none;
 }
 
-#setup_steps li.current {
+#setup_steps li.step_current {
   display: list-item !important;
   display: block;
 }

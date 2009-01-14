@@ -310,7 +310,7 @@ Event.observe( window, 'load', function(){
 	if($('wpo-section-setup'))
 	{
 	  var stepsnum = $A($('setup_steps').getElementsByTagName('LI')).length;
-	  var current = $('setup_steps').getElementsBySelector('.current').first();
+	  var current = $('setup_steps').getElementsBySelector('.step_current').first();
 	  var current_index = parseInt(current.id.replace('step_', ''));
 	  
 	  var enable_button = function(input) {
@@ -336,9 +336,9 @@ Event.observe( window, 'load', function(){
 	  
 	  var show_page = function(index)
 	  {
-	    Element.removeClassName('step_' + current_index, 'current');
+	    Element.removeClassName('step_' + current_index, 'step_current');
 	    current_index = index;	    
-	    Element.addClassName('step_' + current_index, 'current');
+	    Element.addClassName('step_' + current_index, 'step_current');
       update_buttons_status();  
       $('current_indicator').innerHTML = index;
 	  }

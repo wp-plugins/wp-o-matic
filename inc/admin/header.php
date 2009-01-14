@@ -1,3 +1,4 @@
+<?php // output stylesheets in header in adminWPHeader? ?>
 <link rel="stylesheet" href="<?php echo $this->tplpath ?>/css/admin.css" type="text/css" media="all" title="" />
 <?php if($this->wpbranch >= 25): ?>
 <link rel="stylesheet" href="<?php echo $this->tplpath ?>/css/admin-25.css" type="text/css" media="all" title="" />  
