@@ -4,7 +4,7 @@
  * Description: Enables administrators to create posts automatically from RSS/Atom feeds.
  * Author: Guillermo Rauch
  * Plugin URI: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/
- * Version: 1.0RC5
+ * Version: 1.5alpha1
  * =======================================================================
  
  Homepage:    http://wpomatic.org
@@ -14,18 +14,19 @@
  FAQ:         http://wpomatic.org/faq 
  Author:      http://devthought.com
  
- Changelog 1.0RC5:
+ Changelog 1.5alpha:
   - Added IntelliCron (processing, processed fields to campaigns and feeds respectively)
   - processCampaign, processFeed now take as argument the type of process
   - No more $wpdb globals used
   - Added manual or automatic processing parameter for campaign processing function
   - isDuplicate now considers all posts in database
   - Added uninstall link
-  - Added timezone fix
   - Optimized for Wordpress 2.7
   - Added multiple plugins hooks and filters
+  - Added better warnings
   
  TODO: 
+  - rewrite js for jquery
   - move simple caching to a plugin. phpthumb plugin
   - add options.php/edit.php/list.php/logs.php/import.php/export.php template hooks
   - reset resets feeds processed status and campaign processing status
@@ -37,6 +38,7 @@
       - message: status message
   - display in campaign list if the campaign is being processed, when it started, and if it has feeds being processed and when they started
   - fix feed url escaping
+  - $sections should be reserverd for controller + view, not actions without display or redirects
   
   For 1.0:
   - Plugins section, with url/upload installation
@@ -62,6 +64,8 @@
 define('WPODIR', dirname(__FILE__) . '/');                
 define('WPOINC', WPODIR . 'inc/');   
 define('WPOTPL', WPOINC . 'admin/');
+    
+error_reporting(E_ALL);
     
 # Dependencies                            
 require_once(WPOINC . 'tools.class.php');
@@ -90,9 +94,6 @@ class WPOMatic {
   {              
     global $wpdb, $wp_version;
         
-    //date_default_timezone_offset_set(get_option('gmt_offset'));
-//    print_r(timezone_abbreviations_list());
-                                   
     # Table names init
     $this->db = array(
       'campaign'            => $wpdb->prefix . 'wpo_campaign',
@@ -141,6 +142,7 @@ class WPOMatic {
     $this->helpurl = $this->pluginpath . '/help.php?item=';
     $this->tplpath = $this->pluginpath . '/inc/admin';
     $this->cachepath = WPODIR . get_option('wpo_cachepath');
+    $this->section = '';
     
     # Cron command / url
     $this->cron_url = $this->pluginpath . '/cron.php?code=' . get_option('wpo_croncode');
@@ -163,13 +165,14 @@ class WPOMatic {
                                                   
     # Options   
     WPOTools::addMissingOptions(array(
-     'wpo_log'          => array(1, 'Log WP-o-Matic actions'),
-     'wpo_log_stdout'   => array(0, 'Output logs to browser while a campaign is being processed'),
-     'wpo_unixcron'     => array(WPOTools::isUnix(), 'Use unix-style cron'),
-     'wpo_unixcron_max' => array(0, 'Maximum number of campaigns'),
-     'wpo_croncode'     => array(substr(md5(time()), 0, 8), 'Cron job password.'),
-     'wpo_cacheimages'  => array(0, 'Cache all images. Overrides campaign options'),
-     'wpo_cachepath'    => array('cache', 'Cache path relative to wpomatic directory')
+     'wpo_log'            => array(1, 'Log WP-o-Matic actions'),
+     'wpo_log_stdout'     => array(0, 'Output logs to browser while a campaign is being processed'),
+     'wpo_fetchmode'      => array('automated', 'Fetch mode'),
+     'wpo_automatedmode'  => array('visitor', 'Automated fetch mode'),     
+     'wpo_unixcron_max'   => array(0, 'Maximum number of campaigns'),
+     'wpo_croncode'       => array(substr(md5(time()), 0, 8), 'Cron job password.'),
+     'wpo_cacheimages'    => array(0, 'Cache all images. Overrides campaign options'),
+     'wpo_cachepath'      => array('cache', 'Cache path relative to wpomatic directory')
     ));
     
     // only re-install if new version or uninstalled
@@ -257,6 +260,7 @@ class WPOMatic {
       
       
       add_option('wpo_version', $this->version, 'Installed version log');
+      update_option('wpo_version', $this->version, 'Installed version log');
       
    	  $this->installed = true;
     }
@@ -320,11 +324,8 @@ class WPOMatic {
   
     if($this->installed)
     {
-      if(! get_option('wpo_unixcron'))
-      {       
-        $this->processOne('manual'); 
-        do_action('wpo_pseudo_cron');
-      }  
+      if(get_option('wpo_fetchmode') == 'automated' && get_option('wpo_automatedmode') == 'visitor')
+        $this->processOne(); 
 
       if(isset($_REQUEST['page']) && (strstr($_REQUEST['page'], 'wpomatic.php') || strstr($_REQUEST['page'], 'wpo_')))
       {
@@ -434,13 +435,13 @@ class WPOMatic {
   function processAll($type = 'manual')
   {
     @set_time_limit(0);
-    
+        
     $campaigns = $this->getCampaigns('unparsed=1');
     $count = 0;
     
     foreach($campaigns as $campaign)
     {
-      if(get_option('wpo_unixcron_max') && $count === get_option('wpo_unixcron_max'))
+      if(get_option('wpo_fetchmode') == 'automated' && get_option('wpo_unixcron_max') && $count === get_option('wpo_unixcron_max'))
         break;
         
       $this->processCampaign($campaign, $type);
@@ -453,7 +454,7 @@ class WPOMatic {
   }
   
   // to be called by pseudocron
-  function processOne($type = 'manual')
+  function processOne()
   {
     @session_start();
     @set_time_limit(0);
@@ -465,7 +466,7 @@ class WPOMatic {
     
     foreach($campaigns as $campaign) 
     {
-      $this->processCampaign($campaign, $type, 1);
+      $this->processCampaign($campaign, 'manual', 1);
       $_SESSION['wpo_processed'] = 1;
       break;
     }      
@@ -512,7 +513,7 @@ class WPOMatic {
     
     foreach($feeds as $feed)
     {
-      if($type === 'manual' && ($campaign->max_feeds_process && $processed_feeds === $campaign->max_feeds_process) || ($max_feeds_process && $processed_feeds === $max_feeds_process))
+      if($type === 'manual' && (($campaign->max_feeds_process && $processed_feeds === $campaign->max_feeds_process) || ($max_feeds_process && $processed_feeds === $max_feeds_process)))
         break;
       
       $posts += $this->processFeed(&$campaign, &$feed, $type);
@@ -1181,7 +1182,11 @@ class WPOMatic {
    */
   function adminInit() 
   {             
-    if(! current_user_can('manage_options')) die('Unauthorized');
+    if(! current_user_can('manage_options')) 
+    {
+      auth_redirect();
+      exit;
+    }
     
     // force display of a certain section    
     $this->section = ($this->setup) ? ((isset($_REQUEST['s']) && $_REQUEST['s']) ? $_REQUEST['s'] : $this->sections[0]) : 'setup';
@@ -1220,7 +1225,12 @@ class WPOMatic {
    */
   function adminWarning()
   {
-    if(! $this->setup && $this->section != 'setup')
+    if(! $this->installed)
+    {      
+      echo "<div id='wpo-warning' class='updated fade-ff0000'><p>" . __('WP-o-Matic files have been upgraded but the installation has not. Please deactivate and activate it', 'wpomatic') . "</p></div>"; 
+    }    
+    
+    if($this->installed && ! $this->setup && $this->section != 'setup')
     {      
       echo "<div id='wpo-warning' class='updated fade-ff0000'><p>" . sprintf(__('WP-o-Matic has been installed but it hasn\'t been configured yet. Please <a href="%s">click here</a> to setup and configure WP-o-Matic.', 'wpomatic'), $this->adminurl . '&amp;s=setup') . "</p></div>"; 
     }  
@@ -1269,7 +1279,7 @@ class WPOMatic {
       
       if($this->setup)
       {
-        add_submenu_page(__FILE__, 'WP-o-Matic', 'Dashboard', 8, 'wpo_home', array(&$this, 'admin'));
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Dashboard', 8, __FILE__, array(&$this, 'admin'));
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Campaigns', 8, 'wpo_list', array(&$this, 'admin'));      
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Add campaign', 8, 'wpo_add', array(&$this, 'admin'));      
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Options', 8, 'wpo_options', array(&$this, 'admin'));      
@@ -1366,7 +1376,11 @@ class WPOMatic {
     {
       check_admin_referer('setup');
       
-      update_option('wpo_unixcron', isset($_REQUEST['option_unixcron']));
+      if($_REQUEST['automated_mode'] == 'webcron')
+        $_REQUEST['automated_mode'] = 'cron';
+      
+      update_option('wpo_fetchmode', $_REQUEST['option_mode']);
+      update_option('wpo_automatedmode', $_REQUEST['automated_mode']);
       update_option('wpo_setup', 1);
       
       $this->adminHome();
@@ -1643,12 +1657,16 @@ class WPOMatic {
     
     if($_POST)
     {              
-      update_option('wpo_unixcron',     isset($_REQUEST['option_unixcron']));
-      update_option('wpo_unixcron_max', isset($_REQUEST['option_unixcron_max']));
-      update_option('wpo_log',          isset($_REQUEST['option_logging']));
-      update_option('wpo_log_stdout',   isset($_REQUEST['option_logging_stdout']));      
-      update_option('wpo_cacheimages',  isset($_REQUEST['option_caching']));
-      update_option('wpo_cachepath',    rtrim($_REQUEST['option_cachepath'], '/'));
+      if($_REQUEST['option_automated_mode'] == 'webcron')      
+        $_REQUEST['option_automated_mode'] = 'cron';
+      
+      update_option('wpo_fetchmode',      $_REQUEST['option_mode']);
+      update_option('wpo_automatedmode',  $_REQUEST['option_automated_mode']);
+      update_option('wpo_unixcron_max',   intval($_REQUEST['option_unixcron_max']));
+      update_option('wpo_log',            isset($_REQUEST['option_logging']));
+      update_option('wpo_log_stdout',     isset($_REQUEST['option_logging_stdout']));      
+      update_option('wpo_cacheimages',    isset($_REQUEST['option_caching']));
+      update_option('wpo_cachepath',      rtrim($_REQUEST['option_cachepath'], '/'));
       
       $updated = 1;
     }

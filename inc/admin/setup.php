@@ -28,15 +28,16 @@
       
         <li class="step" id="step_3">
           <p><?php _e('Do you want to process campaigns in automated or manual mode?', 'wpomatic') ?></p>
-          <ul class="radio_options">
-            <li><input type="radio" name="mode" value="yes" id="option_mode_automated" checked="checked" /> <label for="option_mode_automated"><?php _e('Automated', 'wpomatic') ?></label></li> 
-            <li><input type="radio" name="mode" value="no" id="option_mode_manual" /> <label for="option_mode_manual"><?php _e('Manual', 'wpomatic') ?></label></p></li>
+          <ul id="setup_choose_mode" class="radio_options">
+            <li><input type="radio" name="mode" value="automated" id="option_mode_automated" checked="checked" /> <label for="option_mode_automated"><?php _e('Automated', 'wpomatic') ?></label></li> 
+            <li><input type="radio" name="mode" value="manual" id="option_mode_manual" /> <label for="option_mode_manual"><?php _e('Manual', 'wpomatic') ?></label></p></li>
           </ul>
           
-          <div class="answer_mode" id="mode_automated">
+          <div class="answer_mode answer_mode_current" id="mode_automated">
+            <p><?php _e('In automated mode, campaigns and feeds are processed without an administrator\'s intervention.', 'wpomatic') ?></p>
             <p><?php _e('What type of automation are you going to use?', 'wpomatic') ?></p>
-            <ul class="radio_options">
-              <li><input type="radio" name="automated_mode" value="visitor" checked="checked" id="option_automated_mode_visit" /> <label for="option_automated_mode_visitor"><?php _e('Visitor', 'wpomatic') ?></label></p></li>
+            <ul id="setup_automated_choose_mode" class="radio_options">
+              <li><input type="radio" name="automated_mode" value="visitor" checked="checked" id="option_automated_mode_visitor" /> <label for="option_automated_mode_visitor"><?php _e('Visitor', 'wpomatic') ?></label></p></li>
               <li><input type="radio" name="automated_mode" value="webcron" id="option_automated_mode_webcron" /> <label for="option_automated_mode_webcron"><?php _e('WebCron', 'wpomatic') ?></label></li>
               <li><input type="radio" name="automated_mode" value="cron" id="option_automated_mode_cron" /> <label for="option_automated_mode_cron"><?php _e('Cron', 'wpomatic') ?></label></li>
             </ul>
@@ -44,50 +45,53 @@
             <div class="answer_automated_mode answer_automated_mode_current" id="automated_mode_visitor">
               <p><?php _e('This method is available since WP-o-Matic 1.5. It works like a PseudoCron, but splits the process of fetching a Campaign to multiple visitors. With this method, if a campaign is ready to be processed, a visitor processes one feed, the next processes another one, till the campaign is complete. Unlike typical PseudoCron approach, the effect on user experience is negligible.', 'wpomatic') ?></p>
               <p><?php _e('Advantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('No custom setup or configuration required.', 'wpomatic') ?></li>
                 <li><?php _e('Great if you don\'t have hundreds of feeds.', 'wpomatic') ?></li>
                 <li><?php _e('Makes sure the same visitor doesnt\'t process more than one feed per session.', 'wpomatic') ?></li>
-              </ol>
+              </ul>
               
               <p><?php _e('Disadvantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('Naturally, it adds some extra loading time for specific visits.', 'wpomatic') ?></li>
-              </ol>
+              </ul>
             </div>
             
             <div class="answer_automated_mode" id="automated_mode_cron">
               <p><?php _e('This method uses the unix <a href="http://en.wikipedia.org/wiki/Cron">Cron</a> system.', 'wpomatic') ?></p>
               <p><?php _e('Advantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('Doesn\'t rely on blog visitors', 'wpomatic') ?></li>
                 <li><?php _e('Processes your campaign all at once', 'wpomatic') ?></li>
                 <li><?php _e('It\'s as reliable as your server is', 'wpomatic') ?></li>
-              </ol>
+              </ul>
               
               <p><?php _e('Disadvantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('Not supported by all hosting plans', 'wpomatic') ?></li>
                 <li><?php _e('Some people struggle to set it up', 'wpomatic') ?></li>
-              </ol>
+              </ul>
+              
+              <p><?php _e('The unix cron command', 'wpomatic') ?></p>
+              <div class="command"><?php echo $command ?></div>
             </div>
             
             <div class="answer_automated_mode" id="automated_mode_webcron">
               <p><?php _e('This method uses a Web Service that lets you schedule online tasks, such as accessing the WP-o-Matic link that processes campaigns. We recommend <a href="http://cronme.org/">CronMe</a> (free) and <a href="http://webcron.org">WebCron</a> (paid)', 'wpomatic') ?></p>
               
               <p><?php _e('Advantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('Doesn\'t rely on blog visitors', 'wpomatic') ?></li>
                 <li><?php _e('Processes your campaign all at once', 'wpomatic') ?></li>
-              </ol>
+              </ul>
               
               <p><?php _e('Disadvantages:', 'wpomatic') ?></p>
-              <ol>
+              <ul>
                 <li><?php _e('It\'s a 3rd party company that provides the service. They have shown to be working perfectly, but they can go out of business any day.', 'wpomatic') ?></li>
-              </ol>
+              </ul>
               
               <p><?php _e('This is the URL to supply to the service', 'wpomatic') ?></p>
-              <div class="command"><?php echo $command ?></div>
+              <div class="command"><?php echo $url ?></div>
             </div>
                                                 
           </div>
@@ -95,8 +99,6 @@
           <div class="answer_mode" id="mode_manual">
             <p><?php _e('Fine! You\'ll have to click <strong>Fetch</strong> on those campaigns you want to process, or click <strong>Fetch all</strong> to process all of them at the same time. The latter, however, may take a lot of time!', 'wpomatic') ?></p>
           </div>
-        
-          <p><input type="checkbox" name="option_unixcron" checked="checked" id="option_unixcron" /> <label for="option_unixcron"><?php _e('I\'ll be using a cron job (for Unix-like cron or WebCron, uncheck if you want pseudo-cron functionality)', 'wpomatic') ?></label></p>
         </li>
       
         <?php if($safe_mode): ?>

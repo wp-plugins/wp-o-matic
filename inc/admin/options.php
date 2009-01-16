@@ -56,6 +56,11 @@
           
           <p class="note"><?php printf(__('The path %s must exist, be writable by the server and accessible through browser.', 'wpomatic'), '<span id="cachepath">'. WPODIR . '<span id="cachepath_input">' . get_option('wpo_cachepath') . '</span></span>') ?></p>                 
         </li>
+        
+        <li>
+          <p><a href="#" class="button" id="button_uninstall" title="<?php _e('Are you sure you want to uninstall? This process is irreversible', 'wpomatic') ?>"><?php _e('Uninstall', 'wpomatic') ?></a></p>
+          <p class="note"><?php _e('This will remove all tables and Wordpress options that WP-o-Matic created, in addition to deactivating the plugin', 'wpomatic') ?></p>            
+        </li>
       </ul>     
     
       <p class="submit">

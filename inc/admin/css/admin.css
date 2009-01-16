@@ -600,9 +600,20 @@ div.error ul li {
   display: block;
 }
 
+#setup_steps .answer_mode, #setup_steps .answer_automated_mode { display: none; }
+#setup_steps .answer_mode_current, #setup_steps .answer_automated_mode_current { display: block; }
+
+#setup_steps .radio_options { margin-bottom: 15px; }
+#setup_steps .radio_options li { display: inline; }
+
 #setup_button_submit { float: right; }
 #setup_buttons input.disabled { background: #eee; color: #999; }
 
-.command { border: 1px solid #ccc; background: 1px solid #fafafa; padding: 10px; color: #666; }
+.command, .answer_automated_mode { border: 1px solid #ccc; background: #fafafa; padding: 10px 15px; color: #666; }
+.answer_automated_mode li { margin-left: 15px; }
 #options_cron .command { margin: 10px 0; }
 #options_cron h3 { font-size: 11px; color: #333; margin: 10px 0; }
+
+#setup_choose_mode { border-bottom: 1px solid #ccc; padding-bottom: 20px; }
+
+#button_uninstall { color: #cc0000; }

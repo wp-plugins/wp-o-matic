@@ -120,35 +120,28 @@ var fetchCampaignNow = function(id) {
 Event.observe( window, 'load', function(){
 		
 	// Fetch campaigns with iframe (only jquery)
-	if(typeof jQuery !== 'undefined') {
-		$$('.fetch').each(function(el) {
-			Element.observe(el, 'click', function(event) {
-				// add new iframe and 
-				if(! el.fetchdiv) {
-					var fetchdiv = $(document.createElement('div'));
-					fetchdiv.addClassName('fetch_window');
-					fetchdiv.innerHTML = WPOMATIC_TEXT_LOADING;
-					
-					var oncomplete = function(html) { 						
-	          var t = typeof t === 'string' ? t : t.responseText;
-						fetchdiv.innerHTML = t; 
-					};
-					
-					// make ajax call to bring the campaign
-					if(typeof jQuery !== 'undefined')
-	          jQuery.post("admin-ajax.php", {action: "fetch-feed", id: el.rel, 'cookie': encodeURIComponent(document.cookie)}, oncomplete);
-	        else if(typeof Ajax !== 'undefined')
-	          new Ajax.Request("admin-ajax.php", { method: "post", parameters: "action=fetch-feed&id="+el.rel+'&cookie=' +  encodeURIComponent(document.cookie), onComplete: oncomplete })
-	        else
-	          return false;
-					
-					jQuery(el.fetchdiv).jqm({ overlay: 0 });
-				}
-				jQuery(el.fetchdiv).jqmShow();
-				Event.stop(event);
-			});
+	$$('.fetch').each(function(el) {
+		Element.observe(el, 'click', function(event) {
+			// add new iframe and 
+			if(! el.fetchdiv) {
+				var fetchdiv = $(document.createElement('div'));
+				fetchdiv.addClassName('fetch_window');
+				fetchdiv.innerHTML = WPOMATIC_TEXT_LOADING;
+				
+				var oncomplete = function(html) { 						
+          var t = typeof t === 'string' ? t : t.responseText;
+					fetchdiv.innerHTML = t; 
+				};
+				
+				// make ajax call to bring the campaign
+        jQuery.post("admin-ajax.php", {action: "fetch-feed", id: el.rel, 'cookie': encodeURIComponent(document.cookie)}, oncomplete);
+				jQuery(el.fetchdiv).jqm({ overlay: 0 });
+			}
+			jQuery(el.fetchdiv).jqmShow();
+			Event.stop(event);
 		});
-	}
+	});
+
 	$$('.start_process').each(function(el) {
 		var campaign_id = el.parentNode.parentNode.replace('campaign_process-', '');
 		Element.observe(el, 'click', function(event) {
@@ -187,13 +180,7 @@ Event.observe( window, 'load', function(){
           var t = typeof t === 'string' ? t : t.responseText;
           el.className = (t == '1') ? 'ok input_text' : 'err input_text';
         };
-        if(typeof jQuery !== 'undefined')
-          jQuery.post("admin-ajax.php", {action: "test-feed", url: el.value, 'cookie': encodeURIComponent(document.cookie)}, oncomplete);
-        else if(typeof Ajax !== 'undefined')
-          new Ajax.Request("admin-ajax.php", { method: "post", parameters: "action=test-feed&url="+el.value+'&cookie=' +  encodeURIComponent(document.cookie), onComplete: oncomplete })
-        else
-          return false;
-          
+        jQuery.post("admin-ajax.php", {action: "test-feed", url: el.value, 'cookie': encodeURIComponent(document.cookie)}, oncomplete);
         el.className = 'load input_text';
       }
 		};
@@ -309,7 +296,7 @@ Event.observe( window, 'load', function(){
 	// setup steps
 	if($('wpo-section-setup'))
 	{
-	  var stepsnum = $A($('setup_steps').getElementsByTagName('LI')).length;
+	  var stepsnum = jQuery('.step').length;
 	  var current = $('setup_steps').getElementsBySelector('.step_current').first();
 	  var current_index = parseInt(current.id.replace('step_', ''));
 	  
@@ -349,7 +336,7 @@ Event.observe( window, 'load', function(){
 	  
 	  Event.observe('setup_button_previous', 'click', function(){
 	    if(current_index > 1) show_page(current_index - 1);
-	  });
+	  });	  	  
 	}
 	       
 	if($('import_mode_2'))
@@ -357,4 +344,23 @@ Event.observe( window, 'load', function(){
   	
   if($('import_mode_3'))
 	  Event.observe('import_new_campaign', 'keyup', function(){ $('import_mode_3').checked = true });		                                                                  
+	  
+	// new, jquery only code
+	(function($){
+	  // setup page
+	  $('#setup_choose_mode input[type=radio]').click(function(ev){
+      $('.answer_mode_current').removeClass('answer_mode_current');
+      $('#mode_' + ev.target.value).addClass('answer_mode_current');
+    });
+    
+    $('#setup_automated_choose_mode input[type=radio]').click(function(ev){
+      $('.answer_automated_mode_current').removeClass('answer_automated_mode_current');
+      $('#automated_mode_' + ev.target.value).addClass('answer_automated_mode_current');
+    });
+    
+    // options page
+	  $('#button_uninstall').click(function(ev){
+	    if(! confirm(this.title)) ev.preventDefault();
+	  });
+	})(jQuery);
 }, false );
