@@ -75,7 +75,7 @@ class WPOMatic {
   # Internal
   var $version = '1.5alpha1';   
                         
-  var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'uninstall', 'import', 'export', 'reset', 'delete', 'logs', 'testfeed', 'fetch', 'processcampaign');
+  var $sections = array('home', 'setup', 'list', 'add', 'edit', 'options', 'uninstall', 'import', 'export', 'reset', 'delete', 'logs', 'testfeed', 'fetch', 'processcampaign', 'plugins');
                         
   var $campaign_structure = array('main' => array(), 'rewrites' => array(), 'categories' => array(), 'feeds' => array());
   
@@ -123,8 +123,6 @@ class WPOMatic {
     add_action('admin_notices', array(&$this, 'adminWarning'));                               # Admin warnings
     register_activation_hook(__FILE__, array(&$this, 'activate'));                            # Plugin activated
     register_activation_hook(__FILE__, array(&$this, 'deactivate'));                          # Plugin deactivated
-    if(function_exists('register_uninstall_hook'))
-      register_uninstall_hook(__FILE__, array(&$this, 'uninstall'));        
    
     # Ajax actions
     add_action('wp_ajax_delete-campaign', array(&$this, 'adminDelete'));
@@ -178,7 +176,7 @@ class WPOMatic {
     // only re-install if new version or uninstalled
     if($force_install || ! $this->installed) 
     {
-			# wpo_campaign
+		  # wpo_campaign
 			dbDelta(  "CREATE TABLE {$this->db['campaign']} (
 							    id int(11) unsigned NOT NULL auto_increment,
 							    title varchar(255) NOT NULL default '', 
@@ -228,8 +226,8 @@ class WPOMatic {
   							  PRIMARY KEY  (id)
   						 );" );  
   						 
-    # wpo_campaign_post				 
-    dbDelta(  "CREATE TABLE {$this->db['campaign_post']} (
+     # wpo_campaign_post				 
+     dbDelta(  "CREATE TABLE {$this->db['campaign_post']} (
     				    id int(11) unsigned NOT NULL auto_increment,
     					  campaign_id int(11) NOT NULL,
     					  feed_id int(11) NOT NULL,
@@ -238,8 +236,8 @@ class WPOMatic {
     					  PRIMARY KEY  (id)
     				 );" ); 
   						 
-  	 # wpo_campaign_word 				 
-     dbDelta(  "CREATE TABLE {$this->db['campaign_word']} (
+  	  # wpo_campaign_word 				 
+      dbDelta(  "CREATE TABLE {$this->db['campaign_word']} (
   						    id int(11) unsigned NOT NULL auto_increment,
   							  campaign_id int(11) NOT NULL,
   							  word varchar(255) NOT NULL default '',
@@ -250,8 +248,8 @@ class WPOMatic {
   							  PRIMARY KEY  (id)
   						 );" );  						 
 		                      
-		 # wpo_log 			
-     dbDelta(  "CREATE TABLE {$this->db['log']} (
+		  # wpo_log 			
+      dbDelta(  "CREATE TABLE {$this->db['log']} (
   						    id int(11) unsigned NOT NULL auto_increment,
   							  message mediumtext NOT NULL default '',
   							  created_on datetime NOT NULL default '0000-00-00 00:00:00',
@@ -1281,7 +1279,8 @@ class WPOMatic {
       {
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Dashboard', 8, __FILE__, array(&$this, 'admin'));
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Campaigns', 8, 'wpo_list', array(&$this, 'admin'));      
-        add_submenu_page(__FILE__, 'WP-o-Matic', 'Add campaign', 8, 'wpo_add', array(&$this, 'admin'));      
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Add campaign', 8, 'wpo_add', array(&$this, 'admin'));       
+        add_submenu_page(__FILE__, 'WP-o-Matic', 'Plugins', 8, 'wpo_plugins', array(&$this, 'admin'));   
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Options', 8, 'wpo_options', array(&$this, 'admin'));      
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Import', 8, 'wpo_import', array(&$this, 'admin'));
         add_submenu_page(__FILE__, 'WP-o-Matic', 'Export', 8, 'wpo_export', array(&$this, 'admin'));
@@ -2269,6 +2268,21 @@ class WPOMatic {
       $this->wpdb->query(WPOTools::updateQuery($this->wpdb->posts, $properties, "ID = {$post->id}"));
       
     do_action('wpo_alter_post', $id, $properties);
+  }
+  
+  
+  /**
+   * Plugins
+   *
+   * 
+   */
+  function adminPlugins()
+  {
+    
+    
+    do_action('wpo_admin-plugins');
+    
+    include(WPOTPL . 'plugins.php');    
   }
   
   
