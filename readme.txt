@@ -8,6 +8,12 @@ Stable tag: 1.0RC4
 
 WP-o-Matic makes autoblogging a snap by automatically creating posts from the RSS/Atom feeds you choose, which are organized into campaigns. 
 
+== UPDATE! ==
+
+HEY EVERYONE! WE'LL BE ROLLING OUT WP-o-MATIC 2, WITH A REVAMPED INTERFACE, PLUGINS SUPPORT AND AD REVENUE TOOLS REALLY SOON!
+
+Follow http://twitter.com/wpomatic to stay on top of all the WP-o-Matic news!
+
 == Description ==
 
 WP-o-Matic makes autoblogging a snap by automatically creating posts from the RSS/Atom feeds you choose, which are organized into campaigns. 
