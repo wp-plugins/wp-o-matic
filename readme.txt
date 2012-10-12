@@ -4,7 +4,7 @@ Donate link: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/#dona
 Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, Post, writing, bot, admin, automation, aggregator, page, pages, rapid, creation, generation, seo, AJAX, google, images, caching, cache, fetch, categories, category
 Requires at least: 2.2.1
 Tested up to: 2.6.2
-Stable tag: 2.0
+Stable tag: 2.1
 
 WP-o-Matic makes autoblogging a snap by automatically creating posts from the RSS/Atom feeds you choose, which are organized into campaigns. 
 
