@@ -39,6 +39,7 @@
     
     <form action="" method="post">
       <?php wp_nonce_field('import-campaign') ?>
+      <?php echo input_hidden_tag('add', 1) ?>
       
       <ul id="importtree">                
         <?php import_process_tree($opml); ?>  
