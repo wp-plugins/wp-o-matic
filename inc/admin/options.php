@@ -13,7 +13,7 @@
     <?php endif ?>
 
     <form action="" method="post" accept-charset="utf-8">      
-    <?php wp_nonce_field('options') ?>    
+      <input type="hidden" name="update" value="1" />
       
       <ul id="options">
         <li id="options_cron">
@@ -56,11 +56,14 @@
           
           <p class="note"><?php printf(__('The path %s must exist, be writable by the server and accessible through browser.', 'wpomatic'), '<span id="cachepath">'. WPODIR . '<span id="cachepath_input">' . get_option('wpo_cachepath') . '</span></span>') ?></p>                 
         </li>
-        
+				
+				<?php // Added by sydcode (27FEB12) ?>
         <li>
-          <p><a href="#" class="button" id="button_uninstall" title="<?php _e('Are you sure you want to uninstall? This process is irreversible', 'wpomatic') ?>"><?php _e('Uninstall', 'wpomatic') ?></a></p>
-          <p class="note"><?php _e('This will remove all tables and Wordpress options that WP-o-Matic created, in addition to deactivating the plugin', 'wpomatic') ?></p>            
-        </li>
+          <?php echo label_for('option_duplicates', __('Allow duplicate posts')) ?>
+          <?php echo checkbox_tag('option_duplicates', 1, get_option('wpo_duplicates')) ?>        
+          
+          <p class="note"><?php printf(__('This option allows duplicate posts to be created when the title and permalink are in the database.', 'wpomatic'), '<span id="duplicates">'. WPODIR . '<span id="duplicates_input">' . get_option('wpo_duplicates') . '</span></span>') ?></p>                 
+        </li>					
       </ul>     
     
       <p class="submit">
