@@ -3,7 +3,7 @@
 Plugin Name: WP-o-Matic
 Plugin URI: http://themeskult.com
 Description: Automated posts via RSS feed aggregation.
-Version: 2.0
+Version: 2.2
 Author: Themes Kult
 Author URI: http://themeskult.com/
 */
