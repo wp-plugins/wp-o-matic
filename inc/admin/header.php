@@ -4,7 +4,7 @@
 <?php endif ?>
 
 <div id="wpomain">
-<?php if ($this->setup): ?>
+
   <div id="wpomenu" class="wrap">   
     <div> 
       <ul>
@@ -17,7 +17,5 @@
       </ul>
     </div>     
   </div>  
-<?php endif ?>
-
 
   <div id="wpocontent">
