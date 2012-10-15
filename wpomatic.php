@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: WP-o-Matic
-Plugin URI: http://themeskult.com
+Plugin URI: http://themeskult.com/wp-o-matic/
 Description: Automated posts via RSS feed aggregation.
-Version: 2.2
+Version: 2.3
 Author: Themes Kult
 Author URI: http://themeskult.com/
 */
@@ -58,6 +58,7 @@ class WPOMatic {
     add_action('admin_head', array(&$this, 'adminHead'));                                     # Admin head
     add_action('admin_footer', array(&$this, 'adminWarning'));                                # Admin footer
     add_action('admin_menu', array(&$this, 'adminMenu'));                                     # Admin menu creation            
+
    
     # Ajax actions
     add_action('wp_ajax_delete-campaign', array(&$this, 'adminDelete'));
@@ -486,7 +487,8 @@ class WPOMatic {
     $content = $this->parseItemContent($campaign, $feed, $item);
     
     // Item date
-    if($campaign->feeddate && ($item->get_date('U') > (current_time('timestamp', 1) - $campaign->frequency) && $item->get_date('U') < current_time('timestamp', 1)))
+    // if($campaign->feeddate && ($item->get_date('U') > (current_time('timestamp', 1) - $campaign->frequency) && $item->get_date('U') < current_time('timestamp', 1)))
+    if($item->get_date('U') < current_time('timestamp', 1))
       $date = $item->get_date('U');
     else
       $date = null;
@@ -1007,7 +1009,12 @@ class WPOMatic {
    **/
   function adminHead()
   {
+    wp_enqueue_script('highcharts', $this->tplpath . '/js/highcharts/js/highcharts.js');
+
+    wp_enqueue_style('admin-css', $this->tplpath . '/css/admin.css');
+    wp_enqueue_style('admin-css-new', $this->tplpath . '/css/admin-new.css');
     $this->admin = true;
+
   }
   
   /**
@@ -1062,8 +1069,9 @@ class WPOMatic {
   function adminMenu()
   {
     add_submenu_page('options-general.php', 'WP-o-Matic', 'WP-o-Matic', 10, basename(__FILE__), array(&$this, 'admin'));
-  }                    
-    
+  }  
+
+
   /**
    * Outputs the admin header in a template 
    *            
@@ -1074,7 +1082,7 @@ class WPOMatic {
     $current = array();
                     
     foreach($this->sections as $s)
-      $current[$s] = ($s == $this->section) ? 'class="current"' : '';
+      $current[$s] = ($s == $this->section) ? 'class="nav-tab nav-tab-active "' : 'class="nav-tab"';
     
     include(WPOTPL . 'header.php');
   }                                                                  
@@ -1103,6 +1111,10 @@ class WPOMatic {
     $lastcampaigns = $this->getCampaigns('fields=id,title,lastactive,frequency&limit=5&where=UNIX_TIMESTAMP(lastactive)>0&orderby=lastactive');
     $campaigns = $this->getCampaigns('fields=id,title,count&limit=5&orderby=count');
     
+
+
+    
+
     include(WPOTPL . 'home.php');
   }      
     

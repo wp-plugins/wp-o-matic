@@ -1,7 +1,6 @@
 <?php $this->adminHeader() ?>
   
   <div class="wrap">
-    <h2>Campaigns</h2> 
     <?php if(isset($this->forcefetched)): ?>
     <div id="fetched-warning" class="updated">
       <p><?php printf(__("Campaign processed. %s posts fetched", 'wpomatic'), $this->forcefetched) ?></p>
@@ -31,7 +30,7 @@
           <?php foreach($campaigns as $campaign): ?>
           <?php $class = ('alternate' == $class) ? '' : 'alternate'; ?>             
           <tr id='campaign-<?php echo $campaign->id ?>' class='<?php echo $class ?> <?php if($_REQUEST['id'] == $campaign->id) echo 'highlight'; ?>'> 
-            <th scope="row" style="text-align: center"><?php echo $campaign->id ?></th> 
+            <td scope="row" style="text-align: center"><?php echo $campaign->id ?></td> 
             <td><?php echo attribute_escape($campaign->title) ?></td>          
             <td style="text-align: center"><?php echo _e($campaign->active ? 'Yes' : 'No', 'wpomatic') ?></td>
             <td style="text-align: center"><?php echo $campaign->count ?></td>        

@@ -4,9 +4,9 @@
   
   <div class="wrap">  
     <?php if(isset($campaign_add)): ?>
-    <h2>Add campaign</h2>
+    <h3>Add campaign</h3>
     <?php else: ?>
-    <h2>Editing campaign</h2>
+    <h3>Editing campaign</h3>
     <?php endif;?>
     
     <?php if(isset($this->errno) && $this->errno): ?>
@@ -45,13 +45,9 @@
       <?php else: ?>
         <?php echo input_hidden_tag('campaign_edit', $id) ?>
       <?php endif; ?>
-                              
-      <ul id="edit_buttons" class="submit">                       
-        <li><a href="<?php echo $this->helpurl ?>campaigns" class="help_link"><?php _e('Help', 'wpomatic') ?></a></li>                                                                             
-        <li><input type="submit" name="edit_submit" value="Submit" id="edit_submit" /></li>
-      </ul>
-            
-      <ul id="edit_tabs">
+                      
+      <!-- <a href="<?php echo $this->helpurl ?>campaigns" class="help_link"><?php _e('Help', 'wpomatic') ?></a>                                                                              -->              
+      <ul id="edit_tabs" class="wpom-tabs">
         <li class="current"><a href="#" id="tab_basic"><?php _e('Basic', 'wpomatic') ?></a></li>
         <li><a href="#" id="tab_feeds"><?php _e('Feeds', 'wpomatic') ?></a></li>
         <li><a href="#" id="tab_categories"><?php _e('Categories', 'wpomatic') ?></a></li>
@@ -62,33 +58,43 @@
         <?php endif ?>
       </ul>                 
       
-      <div id="edit_sections">                          
+      <div id="edit_sections" class="wpom-edit-section clearfix">                          
         <!-- Basic section -->
-        <div class="section current" id="section_basic">
-          <div class="longtext required">
-            <?php echo label_for('campaign_title', __('Title', 'wpomatic')) ?>
-            <?php echo input_tag('campaign_title', _data_value($data['main'], 'title')) ?>
-            <p class="note"><?php _e('Tip: pick a name that is general for all the campaign\'s feeds (eg: Paris Hilton)', 'wpomatic' ) ?></p>
-          </div>
-            
-          <div class="checkbox required">
-            <?php echo label_for('campaign_active', __('Active?', 'wpomatic')) ?>
-            <?php echo checkbox_tag('campaign_active', 1, _data_value($data['main'], 'active', true)) ?>
-            <p class="note"><?php _e('If inactive, the parser will ignore these feeds', 'wpomatic' ) ?></p>
-          </div> 
+        <div class=" section current" id="section_basic">
           
-          <div class="text">
-            <?php echo label_for('campaign_slug', __('Campaign slug', 'wpomatic')) ?>
-            <?php echo input_tag('campaign_slug', _data_value($data['main'], 'slug')) ?>
-            <p class="note"><?php _e('Optionally, you can set an identifier for this campaign. Useful for detailed track of your ad-revenue.', 'wpomatic' ) ?></p>
-          </div>
-        </div>
+        <table class="form-table" > 
+          <tr>
+            <th><?php echo label_for('campaign_title', __('Title', 'wpomatic')) ?></th>
+            <td>
+              <?php echo input_tag('campaign_title', _data_value($data['main'], 'title')) ?>
+              <p class="description"><?php _e('Tip: pick a name that is general for all the campaign\'s feeds (eg: Paris Hilton)', 'wpomatic' ) ?></p>
+            </td>
+          </tr>
+
+          <tr>
+            <th><?php echo label_for('campaign_active', __('Active?', 'wpomatic')) ?></th>
+            <td>
+              <?php echo checkbox_tag('campaign_active', 1, _data_value($data['main'], 'active', true)) ?>      Yes!      
+              <p class="description"><?php _e('If inactive, the parser will ignore these feeds', 'wpomatic' ) ?></p>
+            </td>
+          </tr>
+
+          <tr>
+            <th><?php echo label_for('campaign_slug', __('Campaign slug', 'wpomatic')) ?></th>
+            <td>
+              <?php echo input_tag('campaign_slug', _data_value($data['main'], 'slug')) ?>
+              <p class="description"><?php _e('Optionally, you can set an identifier for this campaign. Useful for detailed track of your ad-revenue.', 'wpomatic' ) ?></p>
+            </td>
+          </tr>
+        </table>
         
+                </div>
+
         <!-- Feeds section -->
         <div class="section" id="section_feeds">
           <p><?php _e('Please fill in at least one feed. If you\'re not sure about the exact feed url, just type in the domain name, and the feed will be autodetected', 'wpomatic') ?></p>
           
-          <div id="edit_feed">
+          <div id="edit_feed" class="wpom-edit-feed">
             <?php if(isset($data['feeds']['edit'])): ?>
               <?php foreach($data['feeds']['edit'] as $id => $feed): ?>
               <div class="inlinetext required">
@@ -116,7 +122,8 @@
             <?php endif ?>
           </div>
           
-          <a href="#add_feed" id="add_feed"><?php _e('Add more', 'wpomatic') ?></a> | <a href="#" id="test_feeds"><?php _e('Check all', 'wpomatic') ?></a>
+          <a href="#add_feed" id="add_feed" class="button-secondary"><?php _e('Add more', 'wpomatic') ?></a> 
+          <a href="#" id="test_feeds" class="button-secondary"><?php _e('Check all', 'wpomatic') ?></a>
         </div>
          
         <!-- Categories section -->
@@ -136,7 +143,7 @@
             <?php endif ?>
           </ul>          
           
-          <a href="#quick_add" id="quick_add"><?php _e('Quick add', 'wpomatic') ?></a>
+          <a href="#quick_add" id="quick_add" class="button-secondary"><?php _e('Quick add', 'wpomatic') ?></a>
         </div>
           
         <!-- Rewrite section -->
@@ -206,110 +213,139 @@
           </div>
           <?php endif ?>
           
-          <div class="checkbox">
-            <label for="campaign_templatechk"><?php _e('Custom post template', 'wpomatic') ?></label> 
-            <?php echo checkbox_tag('campaign_templatechk', 1, _data_value($data['main'], 'template')) ?>
-            
-            <div id="post_template" class="textarea <?php if(_data_value($data['main'], 'template', '{content}') !== '{content}') echo 'current' ?>">
-              <?php echo textarea_tag('campaign_template', _data_value($data['main'], 'template', '{content}')) ?>
-              <a href="#" id="enlarge_link"><?php _e('Enlarge', 'wpomatic') ?></a>
-              
-              <p class="note" id="tags_note">
-                <?php _e('Valid tags:', 'wpomatic') ?>
-              </p>
-              <p id="tags_list">
-                <span class="tag">{content}</span>, <span class="tag">{title}</span>, <span class="tag">{permalink}</span>, <span class="tag">{feedurl}</span>, <span class="tag">{feedtitle}</span>, <span class="tag">{feedlogo}</span>,<br /> <span class="tag">{campaigntitle}</span>, <span class="tag">{campaignid}</span>, <span class="tag">{campaignslug}</span>
-              </p>
-            </div>               
-            
-            <p class="note"><?php printf(__('Read about <a href="%s" class="help_link">post templates</a>, or check some <a href="%s" class="help_link">examples</a>', 'wpomatic'), $this->helpurl . 'post_templates', $this->helpurl . 'post_templates_examples') ?></p>            
-          </div>
-          
-          <div class="multipletext">
-            <?php 
-              $f = _data_value($data['main'], 'frequency');
 
-              if($f) {
-                $frequency = WPOTools::calcTime($f);                
-              }                
-              else
-                $frequency = array();
-            ?>
-            
-            <label><?php _e('Frequency', 'wpomatic') ?></label>                                      
+          <?php 
 
-            <?php echo input_tag('campaign_frequency_d', _data_value($frequency, 'days', 1), 'size=2 maxlength=3')?>
-            <?php _e('d', 'wpomatic') ?> 
+          $f = _data_value($data['main'], 'frequency');
+
+          if($f) {
+            $frequency = WPOTools::calcTime($f);                
+          }                
+          else
+            $frequency = array();
+          ?>
+
+          <table class="form-table">
+            <tr>
+              <th><label for="campaign_templatechk"><?php _e('Custom post template', 'wpomatic') ?></label> </th>
+              <td>
+                <?php echo checkbox_tag('campaign_templatechk', 1, _data_value($data['main'], 'template')) ?>  Yes!
+
+                <div id="post_template" class="textarea <?php if(_data_value($data['main'], 'template', '{content}') !== '{content}') echo 'current' ?>">
+                  <?php echo textarea_tag('campaign_template', _data_value($data['main'], 'template', '{content}')) ?>
+                  <!-- <a href="#" id="enlarge_link"><?php _e('Enlarge', 'wpomatic') ?></a> -->
+                  
+                  <p class="description" id="tags_note">
+                    <?php _e('Valid tags:', 'wpomatic') ?>
+                  </p>
+                  <p id="tags_list">
+                    <span class="tag">{content}</span>, <span class="tag">{title}</span>, <span class="tag">{permalink}</span>, <span class="tag">{feedurl}</span>, <span class="tag">{feedtitle}</span>, <span class="tag">{feedlogo}</span>,<br /> <span class="tag">{campaigntitle}</span>, <span class="tag">{campaignid}</span>, <span class="tag">{campaignslug}</span>
+                  </p>
+                </div>               
             
-            <?php echo input_tag('campaign_frequency_h', _data_value($frequency, 'hours', 5), 'size=2 maxlength=2')?>            
-            <?php _e('h', 'wpomatic') ?> 
-             
-            <?php echo input_tag('campaign_frequency_m', _data_value($frequency, 'minutes', 0), 'size=2 maxlength=2')?>            
-            <?php _e('m', 'wpomatic') ?> 
-                
-            <p class="note"><?php _e('How often should feeds be checked? (days, hours and minutes)', 'wpomatic') ?></p>
-          </div>       
-  
-          <div class="checkbox">
-            <?php echo label_for('campaign_cacheimages', __('Cache images', 'wpomatic')) ?>
-            <?php echo checkbox_tag('campaign_cacheimages', 1, _data_value($data['main'], 'cacheimages', is_writable($this->cachepath))) ?>            
-            <p class="note"><?php _e('Images will be stored in your server, instead of hotlinking from the original site.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>image_caching" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
-          </div>   
-                                             
-          <div class="checkbox">
-            <?php echo label_for('campaign_feeddate', __('Use feed date', 'wpomatic')) ?>
-            <?php echo checkbox_tag('campaign_feeddate', 1, _data_value($data['main'], 'feeddate', false)) ?>
-            <p class="note"><?php _e('Use the original date from the post instead of the time the post is created by WP-o-Matic.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>feed_date_option" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
-          </div>    
-          
-          <div class="checkbox">
-            <?php echo label_for('campaign_dopingbacks', __('Perform pingbacks', 'wpomatic')) ?>
-            <?php echo checkbox_tag('campaign_dopingbacks', 1, _data_value($data['main'], 'dopingbacks', false)) ?>
-          </div>         
-          
-          <div class="radio">
-            <label class="main"><?php _e('Type of post to create', 'wpomatic')?></label>
-              
-            <?php echo radiobutton_tag('campaign_posttype', 'publish', !isset($data['main']['posttype']) || _data_value($data['main'], 'posttype') == 'publish', 'id=type_published') ?>
-            <?php echo label_for('type_published', __('Published', 'wpomatic')) ?>
-            
-            <?php echo radiobutton_tag('campaign_posttype', 'private', _data_value($data['main'], 'posttype') == 'private', 'id=type_private') ?>
-            <?php echo label_for('type_private', __('Private', 'wpomatic')) ?>
-            
-            <?php echo radiobutton_tag('campaign_posttype', 'draft', _data_value($data['main'], 'posttype') == 'draft', 'id=type_draft') ?>
-            <?php echo label_for('type_draft', __('Draft', 'wpomatic')) ?>
-          </div>
-          
-          <div class="text">
-            <?php echo label_for('campaign_author', __('Author:', 'wpomatic')) ?>
-            <?php echo select_tag('campaign_author', options_for_select($author_usernames, _data_value($data['main'], 'author', 'admin'))) ?>
-            <p class="note"><?php _e("The created posts will be assigned to this author.", 'wpomatic') ?></p>
-          </div>
-          
-          <div class="text required">
-            <?php echo label_for('campaign_max', __('Max items to create on each fetch', 'wpomatic')) ?>
-            <?php echo input_tag('campaign_max', _data_value($data['main'], 'max', '10'), 'size=2 maxlength=3') ?>
-            <p class="note"><?php _e("Set it to 0 for unlimited. If set to a value, only the last X items will be selected, ignoring the older ones.", 'wpomatic') ?></p>
-          </div>
-          
-          <div class="checkbox">            
-            <?php echo label_for('campaign_linktosource', __('Post title links to source?', 'wpomatic')) ?>
-            <?php echo checkbox_tag('campaign_linktosource', 1, _data_value($data['main'], 'linktosource', false)) ?>
-          </div>
-          
-          <div class="radio">
-            <label class="main"><?php _e('Discussion options:', 'wpomatic')?></label>
-            
-            <?php echo select_tag('campaign_commentstatus', 
+                <p class="description"><?php printf(__('Read about <a href="%s" class="help_link">post templates</a>, or check some <a href="%s" class="help_link">examples</a>', 'wpomatic'), $this->helpurl . 'post_templates', $this->helpurl . 'post_templates_examples') ?></p>           
+
+
+              </td>
+            </tr>
+
+            <tr>
+              <th><label><?php _e('Frequency', 'wpomatic') ?></label>   </th>
+              <td>
+
+                <div class="">
+                          
+                    <?php echo input_tag('campaign_frequency_d', _data_value($frequency, 'days', 1), 'size=2 maxlength=3')?>
+                    <?php _e('d', 'wpomatic') ?> 
+                    
+                    <?php echo input_tag('campaign_frequency_h', _data_value($frequency, 'hours', 5), 'size=2 maxlength=2')?>            
+                    <?php _e('h', 'wpomatic') ?> 
+                     
+                    <?php echo input_tag('campaign_frequency_m', _data_value($frequency, 'minutes', 0), 'size=2 maxlength=2')?>            
+                    <?php _e('m', 'wpomatic') ?> 
+                        
+                    <p class="description"><?php _e('How often should feeds be checked? (days, hours and minutes)', 'wpomatic') ?></p>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_cacheimages', __('Cache images', 'wpomatic')) ?></th>
+                <td>
+                    <?php echo checkbox_tag('campaign_cacheimages', 1, _data_value($data['main'], 'cacheimages', is_writable($this->cachepath))) ?>   Yes!          
+                    <p class="description"><?php _e('Images will be stored in your server, instead of hotlinking from the original site.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>image_caching" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_feeddate', __('Use feed date', 'wpomatic')) ?></th>
+                <td>
+                    <?php echo checkbox_tag('campaign_feeddate', 1, _data_value($data['main'], 'feeddate', false)) ?>  Yes!
+                    <p class="description"><?php _e('Use the original date from the post instead of the time the post is created by WP-o-Matic.', 'wpomatic') ?> <a href="<?php echo $this->helpurl ?>feed_date_option" class="help_link"><?php _e('More', 'wpomatic') ?></a></p>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_dopingbacks', __('Perform pingbacks', 'wpomatic')) ?></th>
+                <td><?php echo checkbox_tag('campaign_dopingbacks', 1, _data_value($data['main'], 'dopingbacks', false)) ?> Yes!</td>
+            </tr>
+
+            <tr>
+                <th><label class="main"><?php _e('Type of post to create', 'wpomatic')?></label></th>
+                <td>
+                   <p>
+                     <?php echo radiobutton_tag('campaign_posttype', 'publish', !isset($data['main']['posttype']) || _data_value($data['main'], 'posttype') == 'publish', 'id=type_published') ?>
+                    <?php echo label_for('type_published', __('Published', 'wpomatic')) ?>
+                    
+                    <?php echo radiobutton_tag('campaign_posttype', 'private', _data_value($data['main'], 'posttype') == 'private', 'id=type_private') ?>
+                    <?php echo label_for('type_private', __('Private', 'wpomatic')) ?>
+                    
+                    <?php echo radiobutton_tag('campaign_posttype', 'draft', _data_value($data['main'], 'posttype') == 'draft', 'id=type_draft') ?>
+                    <?php echo label_for('type_draft', __('Draft', 'wpomatic')) ?>
+                   </p>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_author', __('Author:', 'wpomatic')) ?></th>
+                <td>
+                    <?php echo select_tag('campaign_author', options_for_select($author_usernames, _data_value($data['main'], 'author', 'admin'))) ?>
+                    <p class="description"><?php _e("The created posts will be assigned to this author.", 'wpomatic') ?></p>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_max', __('Max items to create on each fetch', 'wpomatic')) ?></th>
+                <td>
+                    <?php echo input_tag('campaign_max', _data_value($data['main'], 'max', '10'), 'size=2 maxlength=3') ?>
+                    <p class="description"><?php _e("Set it to 0 for unlimited. If set to a value, only the last X items will be selected, ignoring the older ones.", 'wpomatic') ?></p>
+                </td>
+            </tr>
+
+            <tr>
+                <th><?php echo label_for('campaign_linktosource', __('Post title links to source?', 'wpomatic')) ?></th>
+                <td>
+                    <?php echo checkbox_tag('campaign_linktosource', 1, _data_value($data['main'], 'linktosource', false)) ?>  Yes!
+                </td>
+            </tr>
+
+            <tr>
+                <th><label class="main"><?php _e('Discussion options:', 'wpomatic')?></label></th>
+                <td>
+                    <p><?php echo select_tag('campaign_commentstatus', 
                         options_for_select(
                           array('open' => __('Open', 'wpomatic'), 
                                 'closed' => __('Closed', 'wpomatic'), 
                                 'registered_only' => __('Registered only', 'registered_only')
-                                ), _data_value($data['main'], 'comment_status', 'open'))) ?>
+                                ), _data_value($data['main'], 'comment_status', 'open'))) ?></p>
             
-            <?php echo checkbox_tag('campaign_allowpings', 1, _data_value($data['main'], 'allowpings', true)) ?>
-            <?php echo label_for('campaign_allowpings', __('Allow pings', 'wpomatic')) ?>
-          </div>
+                    
+                    <p><i><?php echo checkbox_tag('campaign_allowpings', 1, _data_value($data['main'], 'allowpings', true)) ?> <?php echo label_for('campaign_allowpings', __('Allow pings', 'wpomatic')) ?></i></p>
+                </td>
+            </tr>
+          </table>
+
+            
         </div>   
               
         <?php if(isset($campaign_edit)): ?>              
@@ -317,7 +353,7 @@
         <div class="section" id="section_tools">    
           <div class="buttons">
             <h3><?php _e('Posts action', 'wpomatic') ?></h3>
-            <p class="note"><?php _e("The selected action applies to all the posts created by this campaign", 'wpomatic') ?></p>
+            <p class="description"><?php _e("The selected action applies to all the posts created by this campaign", 'wpomatic') ?></p>
             
             <ul>
               <li>
@@ -350,12 +386,14 @@
           <div class="btn">   
             <label><?php _e('Test all feeds', 'wpomatic') ?></label>
             <input type="button" name="campaign_tool_testall_btn" value="Test" />
-            <p class="note"><?php _e('This option creates one draft from each feed you added.', 'wpomatic') ?></p>
+            <p class="description"><?php _e('This option creates one draft from each feed you added.', 'wpomatic') ?></p>
           </div>
           -->
         </div>
         <?php endif ?>
-      </div>  
+      </div> 
+
+      <input type="submit" name="edit_submit" class="button-primary" value="Submit" />
     </form>          
   </div>
   

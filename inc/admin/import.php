@@ -4,7 +4,6 @@
 <?php $this->adminHeader() ?>
       
   <div class="wrap">
-    <h2><?php _e('Import', 'wpomatic') ?></h2>     
     
     <?php if(isset($import_error)): ?>
     <div id="import-warning" class="error">

@@ -9,7 +9,6 @@
   <?php endif; ?>
 
   <div class="wrap">
-    <h2><?php _e('Export', 'wpomatic') ?></h2>
     <p><?php _e('<strong>Note:</strong> This tool only exports lists of feeds, not custom options.', 'wpomatic') ?></p>
     
     <form action="" method="post" accept-charset="utf-8">
