@@ -1,6 +1,6 @@
 === WP-o-Matic ===
 Contributors: rrauch
-Donate link: http://devthought.com/wp-o-matic-the-wordpress-rss-agreggator/#donate
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3FTUJLTN3ZVVG
 Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, Post, writing, bot, admin, automation, aggregator, page, pages, rapid, creation, generation, seo, AJAX, google, images, caching, cache, fetch, categories, category
 Requires at least: 3.0
 Tested up to: 3.4.2
