@@ -3,7 +3,7 @@
 Plugin Name: WP-o-Matic
 Plugin URI: http://themeskult.com/wp-o-matic/
 Description: Automated posts via RSS feed aggregation.
-Version: 2.3.1
+Version: 2.3.2
 Author: Themes Kult
 Author URI: http://themeskult.com/
 */
@@ -102,7 +102,7 @@ class WPOMatic {
      'wpo_croncode'     => array(substr(md5(time()), 0, 8), 'Cron job password.'),
      'wpo_cacheimages'  => array(0, 'Cache all images. Overrides campaign options'),
      'wpo_cachepath'    => array('cache', 'Cache path relative to wpomatic directory'),
-		 'wpo_duplicates'    => array(0, 'Allows duplicate posts')	// Added by sydcode (29FEB12).
+		 'wpo_duplicates'    => array(0, 'Allows duplicate posts')	
     ));
     
     // only re-install if new version or uninstalled
@@ -212,7 +212,6 @@ class WPOMatic {
     foreach($this->db as $table) 
       $wpdb->query("DROP TABLE {$table} ");
     
-    // Delete options. Modified by sydcode (29FEB12).
     WPOTools::deleteOptions(array('wpo_log', 'wpo_log_stdout', 'wpo_unixcron', 'wpo_croncode', 'wpo_cacheimages', 'wpo_cachepath', 'wpo_duplicates'));
   }                                
   
@@ -249,7 +248,6 @@ class WPOMatic {
       if(! get_option('wpo_unixcron'))
         $this->processAll();   
 
-			// Modified by Sydcode (29FEB12)
 			if(isset($_REQUEST['page']) && $_REQUEST['page'] == 'wpomatic.php')
       {
         if(isset($_REQUEST['campaign_add']) || isset($_REQUEST['campaign_edit']))
@@ -417,7 +415,6 @@ class WPOMatic {
         break;
       }    
 
-			// Added by sydcode (04MAR12). Check for duplicate items in the feed.
 			if (in_array($item, $items)) {
 				break;
 			}
@@ -531,7 +528,8 @@ class WPOMatic {
    * @param   $feed       object    Feed database object
    * @param   $item       object    SimplePie_Item object
    */
-	// Modified by sydcode (29FEB12).	 
+
+
   function isDuplicate(&$campaign, &$feed, &$item)
   {
     global $wpdb;
@@ -1009,8 +1007,6 @@ class WPOMatic {
    **/
   function adminHead()
   {
-    wp_enqueue_script('highcharts', $this->tplpath . '/js/highcharts/js/highcharts.js');
-
     wp_enqueue_style('admin-css', $this->tplpath . '/css/admin.css');
     wp_enqueue_style('admin-css-new', $this->tplpath . '/css/admin-new.css');
     $this->admin = true;
@@ -1331,7 +1327,7 @@ class WPOMatic {
       update_option('wpo_log_stdout',   isset($_REQUEST['option_logging_stdout']));      
       update_option('wpo_cacheimages',  isset($_REQUEST['option_caching']));
       update_option('wpo_cachepath',    rtrim($_REQUEST['option_cachepath'], '/'));
-      update_option('wpo_duplicates',   isset($_REQUEST['option_duplicates']));		// Added by sydcode (29FEB12)		
+      update_option('wpo_duplicates',   isset($_REQUEST['option_duplicates']));		
       
       $updated = 1;
     }
