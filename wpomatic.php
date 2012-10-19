@@ -3,7 +3,7 @@
 Plugin Name: WP-o-Matic
 Plugin URI: http://themeskult.com/wp-o-matic/
 Description: Automated posts via RSS feed aggregation.
-Version: 2.3.4
+Version: 2.3.5
 Author: Themes Kult
 Author URI: http://themeskult.com/
 */
@@ -19,7 +19,7 @@ require_once( WPOINC . 'tools.class.php' );
 class WPOMatic {               
              
   # Internal
-  var $version = '2.3.4';   
+  var $version = '2.3.5';   
                         
   var $newsetup = false;  # true if this version introduces setup changes
   
@@ -681,8 +681,11 @@ class WPOMatic {
   function cacheRemoteImage($url)
   {
     $contents = @file_get_contents($url);
-    $extension = end(explode('.', basename($url)));
-    $filename = substr(md5(time()), 0, 10) . '_' . preg_replace("/[^A-Za-z0-9-]/", '-', basename($url)) .'.'.$extension;
+
+    $info = pathinfo($url);
+    $file_name =  preg_replace("/[^A-Za-z0-9-]/", '-',basename($url,'.'.$info['extension'])).'.'.$info['extension'];
+
+    $filename = substr(md5(time()), 0, 10) . '_' .  $file_name;
     
     $cachepath = $this->cachepath;
     
