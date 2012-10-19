@@ -421,7 +421,8 @@
 }
 #wpomain #setup_steps {
   padding-top: 10px;
-  padding-left: 10px;
+  padding-left: 0;
+  margin-left: 0;
   border: 1px dotted #999;
   border-width: 1px 0;
 }
