@@ -679,17 +679,24 @@ class WPOMatic {
    * @return string New url
    */
   function cacheRemoteImage($url)
-  {
+  { 
+
     $contents = @file_get_contents($url);
 
     $info = pathinfo($url);
-    $file_name =  preg_replace("/[^A-Za-z0-9-]/", '-',basename($url,'.'.$info['extension'])).'.'.$info['extension'];
+    $ext = explode('?', $info['extension']);
+    if ($ext[0]) {
+      $ext = $ext[0];
+    }else{
+      $ext = $info['extension'];
+    }
+    $file_name =  preg_replace("/[^A-Za-z0-9-]/", '-',basename($url,'.'.$info['extension'])).'.'.$ext;
 
     $filename = substr(md5(time()), 0, 10) . '_' .  $file_name;
     
     $cachepath = $this->cachepath;
     
-    if(is_writable($cachepath) && $contents)
+    if(is_writable($cachepath) && $contents && getimagesize($url))
     { 
       file_put_contents($cachepath . '/' . $filename, $contents);
       return $this->pluginpath . '/' . get_option('wpo_cachepath') . '/' . $filename;

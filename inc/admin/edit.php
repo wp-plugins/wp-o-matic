@@ -357,18 +357,16 @@
             
             <ul>
               <li>
-                <div class="btn">
-                  <input type="submit" name="tool_removeall" value="<?php _e('Remove all', 'wpomatic') ?>" />
-                </div>
+                  <input type="submit" class="button-secondary" name="tool_removeall" value="<?php _e('Remove all', 'wpomatic') ?>" />
               </li>
               <li>
-                <div class="radio">
+                <div class="">
                   <label class="main"><?php _e('Change status to:', 'wpomatic')?></label>
 
                   <input type="radio" name="campaign_tool_changetype" value="publish" id="changetype_published" checked="checked" /> <label for="changetype_published"><?php _e('Published', 'wpomatic') ?></label>
                   <input type="radio" name="campaign_tool_changetype" value="private" id="changetype_private" /> <label for="changetype_private"><?php _e('Private', 'wpomatic') ?></label>
                   <input type="radio" name="campaign_tool_changetype" value="draft" id="changetype_draft" /> <label for="changetype_draft"><?php _e('Draft', 'wpomatic') ?></label>
-                  <input type="submit" name="tool_changetype" value="<?php _e('Change', 'wpomatic') ?>" />
+                  <input type="submit" class="button-secondary" name="tool_changetype" value="<?php _e('Change', 'wpomatic') ?>" />
                 </div>
               </li>
               <li>
@@ -376,7 +374,7 @@
                   <label for="campaign_tool_changeauthor"><?php _e('Change author username to:', 'wpomatic')?></label>
                   <?php echo select_tag('campaign_tool_changeauthor', options_for_select($author_usernames, _data_value($data['main'], 'author', 'admin'))) ?>
                   
-                  <input type="submit" name="tool_changeauthor" value="<?php _e('Change', 'wpomatic') ?>" />
+                  <input type="submit" name="tool_changeauthor" class="button-secondary" value="<?php _e('Change', 'wpomatic') ?>" />
                 </div>
               </li>
             </ul>
