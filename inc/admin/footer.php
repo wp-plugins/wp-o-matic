@@ -9,5 +9,5 @@
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 
   	<!-- Remove me not! -->
-	<p>WP-o-Matic <?php echo $this->version ?> &mdash; Copyright &copy;2012 <a href="http://themeskult.com">Themes Kult</a></p>
+	<p>WP-o-Matic <?php echo $this->version ?> &mdash; Copyright &copy;2013 <a href="http://themeskult.com">Themes Kult</a></p>
 </div>    
