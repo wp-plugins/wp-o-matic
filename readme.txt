@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: autoblogging, feeds, feed, rss, atom, aggregation, content, syndication, posts, Post, writing, bot, admin, automation, aggregator, page, pages, rapid, creation, generation, seo, AJAX, google, images, caching, cache, fetch, categories, category
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 2.3.7
+Stable tag: 2.3.9
 
 WP-o-Matic makes autoblogging a snap by automatically creating posts from the RSS/Atom feeds you choose, which are organized into campaigns. 
 
@@ -79,8 +79,6 @@ The best way to organize your feeds is up to you.
 2. Campaigns list
 3. Add campaign main tab
 4. Add campaign feeds tab
-5. Add campaign categories tab
-6. Add campaign rewrite tab
-7. Add campaign options tab
-8. Campaign tools
-9. Campaign import
+5. Campaign tools
+6. Campaign import
+7. Campaign export
