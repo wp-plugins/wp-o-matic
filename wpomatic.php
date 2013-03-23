@@ -3,7 +3,7 @@
 Plugin Name: WP-o-Matic
 Plugin URI: http://themeskult.com/wp-o-matic/
 Description: Automated posts via RSS feed aggregation.
-Version: 2.3.8
+Version: 2.3.9
 Author: Themes Kult
 Author URI: http://themeskult.com/
 */
@@ -19,7 +19,7 @@ require_once( WPOINC . 'tools.class.php' );
 class WPOMatic {               
              
   # Internal
-  var $version = '2.3.8';   
+  var $version = '2.3.9';   
                         
   var $newsetup = false;  # true if this version introduces setup changes
   
