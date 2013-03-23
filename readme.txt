@@ -79,8 +79,6 @@ The best way to organize your feeds is up to you.
 2. Campaigns list
 3. Add campaign main tab
 4. Add campaign feeds tab
-5. Add campaign categories tab
-6. Add campaign rewrite tab
-7. Add campaign options tab
-8. Campaign tools
-9. Campaign import
+5. Campaign tools
+6. Campaign import
+7. Campaign import
